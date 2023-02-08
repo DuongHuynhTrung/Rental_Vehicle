@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const bodyParser = require("body-parser");
 const morgan = require("morgan");
 const dotenv = require("dotenv").config();
@@ -9,6 +10,10 @@ const vehicleRouter = require("./src/routes/VehicleRouter");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const corsOptions = {
+  origin: "https://rental-vehicle-na07.onrender.com",
+};
+app.use(cors(corsOptions));
 const swaggerJsDoc = require("swagger-jsdoc");
 const swaggerUI = require("swagger-ui-express");
 
