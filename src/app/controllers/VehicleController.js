@@ -21,16 +21,17 @@ const registerVehicle = asyncHandler(async (req, res, next) => {
   const vehicleAvailable = await Vehicle.findOne({ licensePlates });
   if (vehicleAvailable) {
     res.status(400);
-    throw new Error("Vehicle has already registered!");
+    throw new Error("Vehicle has already registered with License Plates!");
   }
-  const vehicle = Vehicle.create({
+  const vehicle = await Vehicle.create({
     user_id: req.user.id,
     licensePlates,
     description,
     insurance,
   });
+  console.log(vehicle);
   if (vehicle) {
-    res.status(201).json({ _id: vehicle.id, user_id: vehicle.user_id });
+    res.status(201).json(vehicle);
   } else {
     res.status(400);
     throw new Error("Vehicle data is not Valid");
@@ -46,6 +47,11 @@ const getVehicleById = asyncHandler(async (req, res, next) => {
     res.status(404);
     throw new Error("Vehicle Not Found!");
   }
+  const userId = vehicle.user_id.toString();
+  if (req.user.id !== userId) {
+    res.status(403);
+    throw new Error("You don't have permission to get vehicle's information");
+  }
   res.status(200).json(vehicle);
 });
 
@@ -58,15 +64,17 @@ const updateVehicles = asyncHandler(async (req, res, next) => {
     res.status(404);
     throw new Error("Vehicle Not Found!");
   }
-  if (vehicle.user_id.toString() !== req.user.id) {
-    res.status(403);
-    throw new Error("User don't have permission to update other vehicle!");
-  }
-  const { licensePlates } = req.body;
-  const vehicleAvailable = await Vehicle.findOne({ licensePlates });
-  if (vehicleAvailable) {
+  const { description, insurance } = req.body;
+  if (!description || !insurance) {
     res.status(400);
-    throw new Error("This vehicle's License has already Exist!");
+    throw new Error("All field not be empty!");
+  }
+  const userId = vehicle.user_id.toString();
+  if (userId !== req.user.id) {
+    res.status(403);
+    throw new Error(
+      "You don't have permission to update vehicle's information!"
+    );
   }
   const updateVehicle = await Vehicle.findByIdAndUpdate(
     req.params.id,
@@ -87,9 +95,10 @@ const deleteVehicles = asyncHandler(async (req, res, next) => {
     res.status(404);
     throw new Error("Vehicle Not Found!");
   }
-  if (vehicle.user_id.toString() !== req.user.id) {
+  const userId = vehicle.user_id.toString();
+  if (userId !== req.user.id) {
     res.status(403);
-    throw new Error("User don't have permission to update other vehicle!");
+    throw new Error("You don't have permission to update other vehicle!");
   }
   await Vehicle.deleteOne({ _id: req.params.id });
   res.status(200).json(vehicle);

@@ -3,14 +3,15 @@ const User = require("../modules/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+const adminMail = "admin@gmail.com";
+
 //@desc Get all users
 //@route GET /api/users
 //@access private
 const getUsers = asyncHandler(async (req, res, next) => {
-  const adminMail = "admin@gmail.com";
   if (req.user.email !== adminMail) {
     res.status(403);
-    throw new Error("User don't have permission to see all User");
+    throw new Error("Only Admin have permission to see all User");
   }
   const users = await User.find();
   res.status(200).json(users);
@@ -60,7 +61,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
     password: hashedPassword,
   });
   if (user) {
-    res.status(201).json({ _id: user.id, email: user.email });
+    res.status(201).json(user);
   } else {
     res.status(400);
     throw new Error("User data is not Valid!");
@@ -113,6 +114,11 @@ const getUserById = asyncHandler(async (req, res, next) => {
     res.status(404);
     throw new Error("User Not Found!");
   }
+  const userEmail = user.email;
+  if (!(req.user.email === userEmail || req.user.email === adminMail)) {
+    res.status(403);
+    throw new Error("You don't have permission to get user's profile");
+  }
   res.status(200).json(user);
 });
 
@@ -125,8 +131,25 @@ const updateUsers = asyncHandler(async (req, res, next) => {
     res.status(404);
     throw new Error("User Not Found!");
   }
-  const { phone } = req.body;
-  console.log(phone);
+  const { firstName, lastName, gender, dob, address, phone, password } =
+    req.body;
+  if (
+    !firstName ||
+    !lastName ||
+    !gender ||
+    !dob ||
+    !address ||
+    !phone ||
+    !password
+  ) {
+    res.status(400);
+    throw new Error("All field not be empty!");
+  }
+  const userEmail = user.email;
+  if (!(req.user.email === userEmail || req.user.email === adminMail)) {
+    res.status(403);
+    throw new Error("You don't have permission to update user's profile");
+  }
   const userAvailable = await User.findOne({ phone });
   if (userAvailable) {
     res.status(400);
@@ -146,6 +169,11 @@ const deleteUsers = asyncHandler(async (req, res, next) => {
   if (!user) {
     res.status(404);
     throw new Error("User Not Found!");
+  }
+  const userEmail = user.email;
+  if (!(req.user.email === userEmail || req.user.email === adminMail)) {
+    res.status(403);
+    throw new Error("You don't have permission to update user's profile");
   }
   await User.deleteOne({ _id: req.params.id });
   res.status(200).json(user);
