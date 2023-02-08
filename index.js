@@ -11,7 +11,11 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const corsOptions = {
-  origin: "http://localhost:10000",
+  origin: [
+    "http://localhost:10000",
+    "http://localhost:5001",
+    "https://rental-vehicle-na07.onrender.com",
+  ],
 };
 app.use(cors(corsOptions));
 const swaggerJsDoc = require("swagger-jsdoc");
