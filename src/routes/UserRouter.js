@@ -1,5 +1,5 @@
-const express = require("express");
-const bodyParser = require("body-parser");
+const express = require('express');
+const bodyParser = require('body-parser');
 const userRouter = express.Router();
 userRouter.use(bodyParser.json());
 const {
@@ -10,8 +10,8 @@ const {
   deleteUsers,
   loginUser,
   currentUserInfo,
-} = require("../app/controllers/UserController");
-const validateToken = require("../app/middleware/validateTokenHandler");
+} = require('../app/controllers/UserController');
+const validateToken = require('../app/middleware/validateTokenHandler');
 
 /**
  *  @swagger
@@ -125,7 +125,7 @@ const validateToken = require("../app/middleware/validateTokenHandler");
  *
  */
 
-userRouter.route("/register").post(registerUser);
+userRouter.route('/register').post(registerUser);
 
 /**
  * @swagger
@@ -158,14 +158,14 @@ userRouter.route("/register").post(registerUser);
  *
  */
 
-userRouter.route("/login").post(loginUser);
+userRouter.route('/login').post(loginUser);
 userRouter.use(validateToken);
 
 userRouter
-  .route("/")
+  .route('/')
   .all((req, res, next) => {
     res.statusCode = 200;
-    res.setHeader("Content-Type", "json/plain");
+    res.setHeader('Content-Type', 'json/plain');
     next();
   })
 
@@ -199,13 +199,13 @@ userRouter
 
   .get(getUsers);
 
-userRouter.get("/current", currentUserInfo);
+userRouter.get('/current', currentUserInfo);
 
 userRouter
-  .route("/:id")
+  .route('/:id')
   .all((req, res, next) => {
     res.statusCode = 200;
-    res.setHeader("Content-Type", "json/plain");
+    res.setHeader('Content-Type', 'json/plain');
     next();
   })
 

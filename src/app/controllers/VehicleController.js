@@ -1,11 +1,19 @@
-const asyncHandler = require("express-async-handler");
-const Vehicle = require("../modules/Vehicle");
+const asyncHandler = require('express-async-handler');
+const Vehicle = require('../modules/Vehicle');
 
-//@desc Get all Vehicles
+//@desc Get all Vehicles Of User
 //@route GET /api/vehicles
 //@access private
-const getVehicles = asyncHandler(async (req, res, next) => {
+const getVehiclesOfUser = asyncHandler(async (req, res, next) => {
   const vehicles = await Vehicle.find({ user_id: req.user.id });
+  res.status(200).json(vehicles);
+});
+
+//@desc Get all Vehicles to Welcome Page
+//@route GET /api/vehicles/home
+//@access private
+const getAllVehicles = asyncHandler(async (req, res, next) => {
+  const vehicles = await Vehicle.find();
   res.status(200).json(vehicles);
 });
 
@@ -16,12 +24,12 @@ const registerVehicle = asyncHandler(async (req, res, next) => {
   const { licensePlates, description, insurance } = req.body;
   if (!licensePlates || !description || !insurance) {
     res.status(400);
-    throw new Error("All field not be empty!");
+    throw new Error('All field not be empty!');
   }
   const vehicleAvailable = await Vehicle.findOne({ licensePlates });
   if (vehicleAvailable) {
     res.status(400);
-    throw new Error("Vehicle has already registered with License Plates!");
+    throw new Error('Vehicle has already registered with License Plates!');
   }
   const vehicle = await Vehicle.create({
     user_id: req.user.id,
@@ -29,12 +37,11 @@ const registerVehicle = asyncHandler(async (req, res, next) => {
     description,
     insurance,
   });
-  console.log(vehicle);
   if (vehicle) {
     res.status(201).json(vehicle);
   } else {
     res.status(400);
-    throw new Error("Vehicle data is not Valid");
+    throw new Error('Vehicle data is not Valid');
   }
 });
 
@@ -45,7 +52,7 @@ const getVehicleById = asyncHandler(async (req, res, next) => {
   const vehicle = await Vehicle.findById(req.params.id);
   if (!vehicle) {
     res.status(404);
-    throw new Error("Vehicle Not Found!");
+    throw new Error('Vehicle Not Found!');
   }
   const userId = vehicle.user_id.toString();
   if (req.user.id !== userId) {
@@ -62,12 +69,12 @@ const updateVehicles = asyncHandler(async (req, res, next) => {
   const vehicle = await Vehicle.findById(req.params.id);
   if (!vehicle) {
     res.status(404);
-    throw new Error("Vehicle Not Found!");
+    throw new Error('Vehicle Not Found!');
   }
   const { description, insurance } = req.body;
   if (!description || !insurance) {
     res.status(400);
-    throw new Error("All field not be empty!");
+    throw new Error('All field not be empty!');
   }
   const userId = vehicle.user_id.toString();
   if (userId !== req.user.id) {
@@ -93,7 +100,7 @@ const deleteVehicles = asyncHandler(async (req, res, next) => {
   const vehicle = await Vehicle.findById(req.params.id);
   if (!vehicle) {
     res.status(404);
-    throw new Error("Vehicle Not Found!");
+    throw new Error('Vehicle Not Found!');
   }
   const userId = vehicle.user_id.toString();
   if (userId !== req.user.id) {
@@ -105,7 +112,8 @@ const deleteVehicles = asyncHandler(async (req, res, next) => {
 });
 
 module.exports = {
-  getVehicles,
+  getVehiclesOfUser,
+  getAllVehicles,
   registerVehicle,
   getVehicleById,
   updateVehicles,

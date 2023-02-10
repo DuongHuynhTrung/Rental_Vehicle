@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const vehicleSchema = mongoose.Schema(
   {
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       require: true,
     },
     licensePlates: {
@@ -25,4 +25,4 @@ const vehicleSchema = mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("Vehicle", vehicleSchema);
+module.exports = mongoose.model('Vehicle', vehicleSchema);

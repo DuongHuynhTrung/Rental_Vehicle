@@ -1,9 +1,9 @@
-const asyncHandler = require("express-async-handler");
-const User = require("../modules/User");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const asyncHandler = require('express-async-handler');
+const User = require('../modules/User');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
-const adminMail = "admin@gmail.com";
+const adminMail = 'admin@gmail.com';
 
 //@desc Get all users
 //@route GET /api/users
@@ -11,7 +11,7 @@ const adminMail = "admin@gmail.com";
 const getUsers = asyncHandler(async (req, res, next) => {
   if (req.user.email !== adminMail) {
     res.status(403);
-    throw new Error("Only Admin have permission to see all User");
+    throw new Error('Only Admin have permission to see all User');
   }
   const users = await User.find();
   res.status(200).json(users);
@@ -34,18 +34,18 @@ const registerUser = asyncHandler(async (req, res, next) => {
     !password
   ) {
     res.status(400);
-    throw new Error("All field not be empty!");
+    throw new Error('All field not be empty!');
   }
   const userEmailAvailable = await User.findOne({ email });
   if (userEmailAvailable) {
     res.status(400);
-    throw new Error("User has already registered with Email!");
+    throw new Error('User has already registered with Email!');
   }
 
   const userPhoneAvailable = await User.findOne({ phone });
   if (userPhoneAvailable) {
     res.status(400);
-    throw new Error("User has already registered with Phone Number!");
+    throw new Error('User has already registered with Phone Number!');
   }
 
   //Hash password
@@ -64,7 +64,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
     res.status(201).json(user);
   } else {
     res.status(400);
-    throw new Error("User data is not Valid!");
+    throw new Error('User data is not Valid!');
   }
 });
 
@@ -75,7 +75,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
     res.status(400);
-    throw new Error("All field not be empty!");
+    throw new Error('All field not be empty!');
   }
   const user = await User.findOne({ email });
   //compare password to hashedPassword
@@ -89,12 +89,12 @@ const loginUser = asyncHandler(async (req, res, next) => {
         },
       },
       process.env.ACCESS_TOKEN_SECERT,
-      { expiresIn: "15m" }
+      { expiresIn: '15m' }
     );
     res.status(200).json({ accessToken });
   } else {
     res.status(401);
-    throw new Error("Email or Password is not Valid!");
+    throw new Error('Email or Password is not Valid!');
   }
 });
 
@@ -112,7 +112,7 @@ const getUserById = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.params.id);
   if (!user) {
     res.status(404);
-    throw new Error("User Not Found!");
+    throw new Error('User Not Found!');
   }
   const userEmail = user.email;
   if (!(req.user.email === userEmail || req.user.email === adminMail)) {
@@ -129,7 +129,7 @@ const updateUsers = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.params.id);
   if (!user) {
     res.status(404);
-    throw new Error("User Not Found!");
+    throw new Error('User Not Found!');
   }
   const { firstName, lastName, gender, dob, address, phone, password } =
     req.body;
@@ -143,7 +143,7 @@ const updateUsers = asyncHandler(async (req, res, next) => {
     !password
   ) {
     res.status(400);
-    throw new Error("All field not be empty!");
+    throw new Error('All field not be empty!');
   }
   const userEmail = user.email;
   if (!(req.user.email === userEmail || req.user.email === adminMail)) {
@@ -153,7 +153,7 @@ const updateUsers = asyncHandler(async (req, res, next) => {
   const userAvailable = await User.findOne({ phone });
   if (userAvailable) {
     res.status(400);
-    throw new Error("This Phone has already Exist!");
+    throw new Error('This Phone has already Exist!');
   }
   const updateUser = await User.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
@@ -168,7 +168,7 @@ const deleteUsers = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.params.id);
   if (!user) {
     res.status(404);
-    throw new Error("User Not Found!");
+    throw new Error('User Not Found!');
   }
   const userEmail = user.email;
   if (!(req.user.email === userEmail || req.user.email === adminMail)) {
