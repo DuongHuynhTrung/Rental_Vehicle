@@ -162,7 +162,7 @@ vehicleRouter
   .post(registerVehicle);
 
 vehicleRouter
-  .route('/:id')
+  .route('/:licensePlate')
   .all((req, res, next) => {
     res.statusCode = 200;
     res.setHeader('Content-Type', 'json/plain');
@@ -171,17 +171,17 @@ vehicleRouter
 
   /**
    * @swagger
-   * /api/vehicles/{id}:
+   * /api/vehicles/{licensePlate}:
    *  get:
    *    tags:
    *      - Vehicles
-   *    summary: Retrieve a vehicles by vehicle id
-   *    description: Retrieve a vehicles by vehicle id
+   *    summary: Retrieve a vehicles by vehicle licensePlate
+   *    description: Retrieve a vehicles by vehicle licensePlate
    *    parameters:
-   *      - name: id
+   *      - name: licensePlate
    *        in: path
    *        required: true
-   *        description: Vehicle id
+   *        description: Vehicle licensePlate
    *        type: string
    *    responses:
    *      200:
@@ -209,17 +209,17 @@ vehicleRouter
 
   /**
    * @swagger
-   * /api/vehicles/{id}:
+   * /api/vehicles/{licensePlate}:
    *  put:
    *    tags:
    *      - Vehicles
-   *    summary: Update vehicle by vehicle id
-   *    description: Update vehicle by vehicle id
+   *    summary: Update vehicle by vehicle licensePlate
+   *    description: Update vehicle by vehicle licensePlate
    *    parameters:
-   *      - name: id
+   *      - name: licensePlate
    *        in: path
    *        required: true
-   *        description: Vehicle id
+   *        description: Vehicle licensePlate
    *        type: string
    *    requestBody:
    *       required: true
@@ -264,17 +264,17 @@ vehicleRouter
 
   /**
    * @swagger
-   * /api/vehicles/{id}:
+   * /api/vehicles/{licensePlate}:
    *  delete:
    *    tags:
    *      - Vehicles
-   *    summary: Delete vehicle by vehicle id
-   *    description: Delete vehicle by vehicle id
+   *    summary: Delete vehicle by vehicle licensePlate
+   *    description: Delete vehicle by vehicle licensePlate
    *    parameters:
-   *      - name: id
+   *      - name: licensePlate
    *        in: path
    *        required: true
-   *        description: vehicle id
+   *        description: vehicle licensePlate
    *        type: string
    *    responses:
    *      200:
@@ -300,6 +300,7 @@ vehicleRouter
 
   .delete(deleteVehicles);
 
+// Schema of Vehicle Details
 /**
  *  @swagger
  *  components:
@@ -307,10 +308,10 @@ vehicleRouter
  *      Vehicle_Details:
  *        type: object
  *        properties:
- *          vehicle_id:
+ *          licensePlate:
  *            type: string
- *            description: enter vehicle_id
- *            example: 63e1c316e38361ec4c9eea7d
+ *            description: enter licensePlate
+ *            example: H5-26752
  *          vehicleType:
  *            type: string
  *            description: enter vehicle type
@@ -339,7 +340,7 @@ vehicleRouter
  */
 
 vehicleRouter
-  .route('/vehicleDetails/:vehicle_id')
+  .route('/vehicleDetails/:licensePlate')
   .all((req, res, next) => {
     res.statusCode = 200;
     res.setHeader('Content-Type', 'json/plain');
@@ -348,17 +349,17 @@ vehicleRouter
 
   /**
    * @swagger
-   * /api/vehicles/vehicleDetails/{vehicle_id}:
+   * /api/vehicles/vehicleDetails/{licensePlate}:
    *  post:
    *    tags:
    *      - Vehicle Details
    *    summary: Create Vehicle Details for Vehicle
    *    description: Create Vehicle Details for Vehicle
    *    parameters:
-   *      - name: vehicle_id
+   *      - name: licensePlate
    *        in: path
    *        required: true
-   *        description: vehicle id
+   *        description: vehicle licensePlate
    *        type: string
    *    requestBody:
    *       required: true
@@ -415,17 +416,17 @@ vehicleRouter
 
   /**
    * @swagger
-   * /api/vehicles/vehicleDetails/{vehicle_id}:
+   * /api/vehicles/vehicleDetails/{licensePlate}:
    *  get:
    *    tags:
    *      - Vehicle Details
-   *    summary: Retrieve a vehicle details by vehicle id
-   *    description: Retrieve a vehicle details by vehicle id
+   *    summary: Retrieve a vehicle details by vehicle licensePlate
+   *    description: Retrieve a vehicle details by vehicle licensePlate
    *    parameters:
-   *      - name: vehicle_id
+   *      - name: licensePlate
    *        in: path
    *        required: true
-   *        description: Vehicle id
+   *        description: Vehicle licensePlate
    *        type: string
    *    responses:
    *      200:
@@ -451,17 +452,17 @@ vehicleRouter
 
   /**
    * @swagger
-   * /api/vehicles/vehicleDetails/{vehicle_id}:
+   * /api/vehicles/vehicleDetails/{licensePlate}:
    *  put:
    *    tags:
    *      - Vehicle Details
-   *    summary: Update vehicle details by vehicle id
-   *    description: Update vehicle details by vehicle id
+   *    summary: Update vehicle details by vehicle licensePlate
+   *    description: Update vehicle details by vehicle licensePlate
    *    parameters:
-   *      - name: vehicle_id
+   *      - name: licensePlate
    *        in: path
    *        required: true
-   *        description: Vehicle id
+   *        description: Vehicle licensePlate
    *        type: string
    *    requestBody:
    *       required: true
@@ -520,17 +521,17 @@ vehicleRouter
 
   /**
    * @swagger
-   * /api/vehicles/vehicleDetails/{vehicle_id}:
+   * /api/vehicles/vehicleDetails/{licensePlate}:
    *  delete:
    *    tags:
    *      - Vehicle Details
-   *    summary: Delete vehicle by vehicle id
-   *    description: Delete vehicle by vehicle id
+   *    summary: Delete vehicle by vehicle licensePlate
+   *    description: Delete vehicle by vehicle licensePlate
    *    parameters:
-   *      - name: id
+   *      - name: licensePlate
    *        in: path
    *        required: true
-   *        description: vehicle id
+   *        description: vehicle licensePlate
    *        type: string
    *    responses:
    *      200:

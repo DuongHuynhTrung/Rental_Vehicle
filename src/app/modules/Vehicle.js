@@ -7,9 +7,10 @@ const vehicleSchema = mongoose.Schema(
       ref: 'User',
       require: true,
     },
-    licensePlates: {
+    licensePlate: {
       type: String,
       required: [true, "Please add vehicle's license plates."],
+      unique: true,
     },
     description: {
       type: String,

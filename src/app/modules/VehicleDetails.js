@@ -2,9 +2,8 @@ const mongoose = require('mongoose');
 
 const vehicleDetailsSchema = mongoose.Schema(
   {
-    vehicle_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Vehicle',
+    licensePlate: {
+      type: String,
       required: true,
       unique: [true, "Vehicle only have one Vehicle's Details"],
     },

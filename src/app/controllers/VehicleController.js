@@ -29,19 +29,19 @@ const getAllVehicles = asyncHandler(async (req, res, next) => {
 //@route POST /api/Vehicles/register
 //@access private
 const registerVehicle = asyncHandler(async (req, res, next) => {
-  const { licensePlates, description, insurance } = req.body;
-  if (!licensePlates || !description || !insurance) {
+  const { licensePlate, description, insurance } = req.body;
+  if (!licensePlate || !description || !insurance) {
     res.status(400);
     throw new Error('All field not be empty!');
   }
-  const vehicleAvailable = await Vehicle.findOne({ licensePlates });
+  const vehicleAvailable = await Vehicle.findOne({ licensePlate });
   if (vehicleAvailable) {
     res.status(400);
     throw new Error('Vehicle has already registered with License Plates!');
   }
   const vehicle = await Vehicle.create({
     user_id: req.user.id,
-    licensePlates,
+    licensePlate,
     description,
     insurance,
   });
@@ -57,7 +57,8 @@ const registerVehicle = asyncHandler(async (req, res, next) => {
 //@route GET /api/Vehicles/:id
 //@access private
 const getVehicleById = asyncHandler(async (req, res, next) => {
-  const vehicle = await Vehicle.findById(req.params.id);
+  const licensePlate = req.params.licensePlate;
+  const vehicle = await Vehicle.findOne({ licensePlate });
   if (!vehicle) {
     res.status(404);
     throw new Error('Vehicle Not Found!');
@@ -74,7 +75,8 @@ const getVehicleById = asyncHandler(async (req, res, next) => {
 //@route PUT /api/Vehicles/:id
 //@access private
 const updateVehicles = asyncHandler(async (req, res, next) => {
-  const vehicle = await Vehicle.findById(req.params.id);
+  const licensePlate = req.params.licensePlate;
+  const vehicle = await Vehicle.findOne({ licensePlate });
   if (!vehicle) {
     res.status(404);
     throw new Error('Vehicle Not Found!');
@@ -92,7 +94,7 @@ const updateVehicles = asyncHandler(async (req, res, next) => {
     );
   }
   const updateVehicle = await Vehicle.findByIdAndUpdate(
-    req.params.id,
+    vehicle._id.toString(),
     req.body,
     {
       new: true,
@@ -105,7 +107,8 @@ const updateVehicles = asyncHandler(async (req, res, next) => {
 //@route DELETE /api/Vehicles/:id
 //@access private
 const deleteVehicles = asyncHandler(async (req, res, next) => {
-  const vehicle = await Vehicle.findById(req.params.id);
+  const licensePlate = req.params.licensePlate;
+  const vehicle = await Vehicle.findOne({ licensePlate });
   if (!vehicle) {
     res.status(404);
     throw new Error('Vehicle Not Found!');
@@ -115,7 +118,7 @@ const deleteVehicles = asyncHandler(async (req, res, next) => {
     res.status(403);
     throw new Error("You don't have permission to update other vehicle!");
   }
-  await Vehicle.deleteOne({ _id: req.params.id });
+  await Vehicle.deleteOne({ _id: vehicle._id });
   res.status(200).json(vehicle);
 });
 

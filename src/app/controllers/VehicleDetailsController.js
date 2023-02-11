@@ -1,8 +1,9 @@
 const asyncHandler = require('express-async-handler');
 const VehicleDetails = require('../modules/VehicleDetails');
+const Vehicle = require('../modules/Vehicle');
 
 //@desc Register New vehicleDetail
-//@route POST /api/vehicles/vehicleDetails/:vehicle_id
+//@route POST /api/vehicles/vehicleDetails/:licensePlate
 //@access private
 const createVehicleDetail = asyncHandler(async (req, res, next) => {
   const {
@@ -24,14 +25,16 @@ const createVehicleDetail = asyncHandler(async (req, res, next) => {
     res.status(400);
     throw new Error('All field not be empty!');
   }
-  const vehicle_id = req.params.vehicle_id;
-  const vehicleDetailsAvailable = await VehicleDetails.findOne({ vehicle_id });
+  const licensePlate = req.params.licensePlate;
+  const vehicleDetailsAvailable = await VehicleDetails.findOne({
+    licensePlate,
+  });
   if (vehicleDetailsAvailable) {
     res.status(400);
     throw new Error("This Vehicle has already have Vehicle's Details!");
   }
   const vehicleDetail = await VehicleDetails.create({
-    vehicle_id: vehicle_id,
+    licensePlate,
     vehicleType,
     manufacturer,
     model,
@@ -48,11 +51,16 @@ const createVehicleDetail = asyncHandler(async (req, res, next) => {
 });
 
 //@desc Get vehicleDetail
-//@route GET /api/vehicles/vehicleDetails/:vehicle_id
+//@route GET /api/vehicles/vehicleDetails/:licensePlate
 //@access private
 const getVehicleDetailByVehicleID = asyncHandler(async (req, res, next) => {
-  const vehicle_id = req.params.vehicle_id;
-  const vehicleDetail = await VehicleDetails.findOne({ vehicle_id });
+  const licensePlate = req.params.licensePlate;
+  const vehicle = await Vehicle.findOne({ licensePlate });
+  if (!vehicle) {
+    res.status(404);
+    throw new Error("Vehicle doesn't exist! Please check carefully!");
+  }
+  const vehicleDetail = await VehicleDetails.findOne({ licensePlate });
   if (!vehicleDetail) {
     res.status(404);
     throw new Error("Vehicle don't have Details. Please add one!");
@@ -61,11 +69,16 @@ const getVehicleDetailByVehicleID = asyncHandler(async (req, res, next) => {
 });
 
 //@desc Update vehicleDetail
-//@route PUT /api/vehicleDetails/:id
+//@route PUT /api/vehicleDetails/:licensePlate
 //@access private
 const updateVehicleDetailsByVehicleID = asyncHandler(async (req, res, next) => {
-  const vehicle_id = req.params.vehicle_id;
-  const vehicleDetail = await VehicleDetails.findOne({ vehicle_id });
+  const licensePlate = req.params.licensePlate;
+  const vehicle = await Vehicle.findOne({ licensePlate });
+  if (!vehicle) {
+    res.status(404);
+    throw new Error("Vehicle doesn't exist! Please check carefully!");
+  }
+  const vehicleDetail = await VehicleDetails.findOne({ licensePlate });
   if (!vehicleDetail) {
     res.status(404);
     throw new Error("Vehicle don't have Details. Please add one!");
@@ -101,11 +114,16 @@ const updateVehicleDetailsByVehicleID = asyncHandler(async (req, res, next) => {
 });
 
 //@desc Delete vehicleDetail
-//@route DELETE /api/vehicleDetails/:id
+//@route DELETE /api/vehicleDetails/:licensePlate
 //@access private
 const deleteVehicleDetailsByVehicleID = asyncHandler(async (req, res, next) => {
-  const vehicle_id = req.params.vehicle_id;
-  const vehicleDetail = await VehicleDetails.findOne({ vehicle_id });
+  const licensePlate = req.params.licensePlate;
+  const vehicle = await Vehicle.findOne({ licensePlate });
+  if (!vehicle) {
+    res.status(404);
+    throw new Error("Vehicle doesn't exist! Please check carefully!");
+  }
+  const vehicleDetail = await VehicleDetails.findOne({ licensePlate });
   if (!vehicleDetail) {
     res.status(404);
     throw new Error("Vehicle don't have Details. Please add one!");
