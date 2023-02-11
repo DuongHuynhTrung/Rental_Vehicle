@@ -6,6 +6,10 @@ const Vehicle = require('../modules/Vehicle');
 //@access private
 const getVehiclesOfUser = asyncHandler(async (req, res, next) => {
   const vehicles = await Vehicle.find({ user_id: req.user.id });
+  if (vehicles.length === 0) {
+    res.status(404);
+    throw new Error("User don't register any Vehicle!");
+  }
   res.status(200).json(vehicles);
 });
 
@@ -14,6 +18,10 @@ const getVehiclesOfUser = asyncHandler(async (req, res, next) => {
 //@access private
 const getAllVehicles = asyncHandler(async (req, res, next) => {
   const vehicles = await Vehicle.find();
+  if (vehicles.length === 0) {
+    res.status(404);
+    throw new Error("Website don't have any Vehicle!");
+  }
   res.status(200).json(vehicles);
 });
 

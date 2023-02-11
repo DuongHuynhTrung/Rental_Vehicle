@@ -6,6 +6,7 @@ const vehicleDetailsSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Vehicle',
       required: true,
+      unique: [true, "Vehicle only have one Vehicle's Details"],
     },
     vehicleType: {
       type: String,

@@ -1,19 +1,23 @@
 const asyncHandler = require('express-async-handler');
 const User = require('../modules/User');
+const Role = require('../modules/Role');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
-const adminMail = 'admin@gmail.com';
 
 //@desc Get all users
 //@route GET /api/users
 //@access private
 const getUsers = asyncHandler(async (req, res, next) => {
-  if (req.user.email !== adminMail) {
+  const role = await Role.findById(req.user.role_id);
+  if (role.roleName !== 'Admin') {
     res.status(403);
     throw new Error('Only Admin have permission to see all User');
   }
   const users = await User.find();
+  if (users.length === 0) {
+    res.status(404);
+    throw new Error("Website don't have any member!");
+  }
   res.status(200).json(users);
 });
 
@@ -21,8 +25,17 @@ const getUsers = asyncHandler(async (req, res, next) => {
 //@route POST /api/users/register
 //@access public
 const registerUser = asyncHandler(async (req, res, next) => {
-  const { firstName, lastName, gender, dob, address, phone, email, password } =
-    req.body;
+  const {
+    firstName,
+    lastName,
+    gender,
+    dob,
+    address,
+    phone,
+    email,
+    password,
+    roleName,
+  } = req.body;
   if (
     !firstName ||
     !lastName ||
@@ -31,7 +44,8 @@ const registerUser = asyncHandler(async (req, res, next) => {
     !address ||
     !phone ||
     !email ||
-    !password
+    !password ||
+    !roleName
   ) {
     res.status(400);
     throw new Error('All field not be empty!');
@@ -50,6 +64,8 @@ const registerUser = asyncHandler(async (req, res, next) => {
 
   //Hash password
   const hashedPassword = await bcrypt.hash(password, 10);
+  const role = await Role.findOne({ roleName });
+  console.log(role.roleName);
   const user = await User.create({
     firstName,
     lastName,
@@ -59,6 +75,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
     phone,
     email,
     password: hashedPassword,
+    role_id: role._id.toString(),
   });
   if (user) {
     res.status(201).json(user);
@@ -80,11 +97,15 @@ const loginUser = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ email });
   //compare password to hashedPassword
   if (user && bcrypt.compare(password, user.password)) {
+    const role_id = user.role_id.toString();
+    const role = await Role.findById(role_id);
     const accessToken = jwt.sign(
       {
         user: {
           userName: user.lastName,
           email: user.email,
+          roleName: role.roleName,
+          role_id: user.role_id,
           id: user.id,
         },
       },

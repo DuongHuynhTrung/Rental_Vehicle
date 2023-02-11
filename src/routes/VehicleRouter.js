@@ -66,6 +66,8 @@ vehicleRouter.use(bodyParser.json());
  *                  type: array
  *                  items:
  *                    $ref: '#/components/schemas/Vehicle'
+ *      404:
+ *        description: Website don't have any Vehicle!
  *
  */
 
@@ -103,6 +105,8 @@ vehicleRouter
    *                  type: array
    *                  items:
    *                    $ref: '#/components/schemas/Vehicle'
+   *      404:
+   *        description: User don't register any Vehicle!
    *
    */
 

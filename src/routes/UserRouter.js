@@ -11,6 +11,12 @@ const {
   loginUser,
   currentUserInfo,
 } = require('../app/controllers/UserController');
+const {
+  getDrivingLicenseOfUser,
+  registerDrivingLicense,
+  updateDrivingLicense,
+  deleteDrivingLicense,
+} = require('../app/controllers/DrivingLicenseController');
 const validateToken = require('../app/middleware/validateTokenHandler');
 
 /**
@@ -161,6 +167,7 @@ userRouter.route('/register').post(registerUser);
 userRouter.route('/login').post(loginUser);
 userRouter.use(validateToken);
 
+//Router for Admin to getUsers
 userRouter
   .route('/')
   .all((req, res, next) => {
@@ -201,6 +208,204 @@ userRouter
 
 userRouter.get('/current', currentUserInfo);
 
+/**
+ *  @swagger
+ *  components:
+ *    schemas:
+ *      Driving_License:
+ *        type: object
+ *        properties:
+ *          user_id:
+ *            type: object
+ *            description: User's Id
+ *          licenseNo:
+ *            type: number
+ *            description: enter driving license number
+ *            example: 21411949315
+ *          licenseClass:
+ *            type: string
+ *            description: enter driving license class
+ *            example: A1
+ *          expireDate:
+ *            type: string
+ *            description: enter driving license expireDate
+ *            example: 22/01/2023
+ */
+
+//Router for CRUD Driving License
+userRouter
+  .route('/drivingLicense')
+  .all((req, res, next) => {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'json/plain');
+    next();
+  })
+
+  /**
+   * @swagger
+   * /api/users/drivingLicense:
+   *  get:
+   *    tags:
+   *      - Driving License
+   *    summary: Retrieve a driving License of user
+   *    description: Retrieve a driving License of user
+   *    responses:
+   *      200:
+   *        description: Retrieve a driving License of user
+   *        content:
+   *          application/json:
+   *            schema:
+   *              type: object
+   *              properties:
+   *                description:
+   *                  type: string
+   *                  example: Successfully fetched data!
+   *                data:
+   *                  type: array
+   *                  items:
+   *                    $ref: '#/components/schemas/Driving_License'
+   *      404:
+   *        description: User doesn't register Driving License!
+   *
+   */
+
+  .get(getDrivingLicenseOfUser)
+
+  /**
+   * @swagger
+   * /api/users/drivingLicense:
+   *  post:
+   *    tags:
+   *      - Driving License
+   *    summary: Register new Driving License for User
+   *    description: Register new Driving License for User
+   *    requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *                licenseNo:
+   *                  type: number
+   *                  description: enter driving license number
+   *                  example: 21411949315
+   *                licenseClass:
+   *                  type: string
+   *                  description: enter driving license class
+   *                  example: A1
+   *                expireDate:
+   *                  type: string
+   *                  description: enter driving license expireDate
+   *                  example: 22/01/2023
+   *    responses:
+   *      201:
+   *        description:  Register Successfully!
+   *        content:
+   *          application/json:
+   *            schema:
+   *              type: object
+   *              properties:
+   *                description:
+   *                  type: string
+   *                  example: Register Successfully!
+   *                data:
+   *                  type: array
+   *                  items:
+   *                    $ref: '#/components/schemas/Vehicle'
+   *      400:
+   *        description: All field not be empty! OR Vehicle has already registered with License Plates! OR Vehicle data is not Valid!
+   *
+   */
+
+  .post(registerDrivingLicense)
+
+  /**
+   * @swagger
+   * /api/users/drivingLicense:
+   *  put:
+   *    tags:
+   *      - Driving License
+   *    summary: Update driving License for user by user id
+   *    description: Update driving License for user by user id
+   *    requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *                licenseNo:
+   *                  type: number
+   *                  description: enter driving license number
+   *                  example: 21411949315
+   *                licenseClass:
+   *                  type: string
+   *                  description: enter driving license class
+   *                  example: A1
+   *                expireDate:
+   *                  type: string
+   *                  description: enter driving license expireDate
+   *                  example: 22/01/2023
+   *    responses:
+   *      200:
+   *        description: Driving License information updated
+   *        content:
+   *          application/json:
+   *            schema:
+   *              type: object
+   *              properties:
+   *                description:
+   *                  type: string
+   *                  example: Successfully update drivingLicense's data!
+   *                data:
+   *                  type: array
+   *                  items:
+   *                    $ref: '#/components/schemas/Driving_License'
+   *      400:
+   *        description: All field not be empty!
+   *      403:
+   *        description: You don't have permission to update drivingLicense's information!
+   *      404:
+   *        description: User doesn't register Driving License!
+   *
+   */
+
+  .put(updateDrivingLicense)
+
+  /**
+   * @swagger
+   * /api/users/drivingLicense:
+   *  delete:
+   *    tags:
+   *      - Driving License
+   *    summary: Delete driving License for User by user id
+   *    description: Delete driving License for User by user id
+   *    responses:
+   *      200:
+   *        description: Successfully deleted Driving License
+   *        content:
+   *          application/json:
+   *            schema:
+   *              type: object
+   *              properties:
+   *                description:
+   *                  type: string
+   *                  example: Successfully deleted Driving License!
+   *                data:
+   *                  type: array
+   *                  items:
+   *                    $ref: '#/components/schemas/Driving_License'
+   *      403:
+   *        description: You don't have permission to delete other drivingLicense!
+   *      404:
+   *        description: User doesn't register Driving License!
+   *
+   */
+
+  .delete(deleteDrivingLicense);
+
+//Router for getUserByID, updateUser, deleteUser
 userRouter
   .route('/:id')
   .all((req, res, next) => {
