@@ -42,7 +42,6 @@ const options = {
     servers: [
       {
         url: `https://rental-vehicle-na07.onrender.com`,
-        url: `http://localhost:${PORT}`,
       },
     ],
     components: {
