@@ -3,12 +3,11 @@ const bodyParser = require('body-parser');
 const userRouter = express.Router();
 userRouter.use(bodyParser.json());
 const {
-  getUsers,
   registerUser,
+  getUsers,
   getUserById,
   updateUsers,
   deleteUsers,
-  loginUser,
   currentUserInfo,
 } = require('../app/controllers/UserController');
 const {
@@ -133,38 +132,6 @@ const validateToken = require('../app/middleware/validateTokenHandler');
 
 userRouter.route('/register').post(registerUser);
 
-/**
- * @swagger
- * /api/users/login:
- *  post:
- *    tags:
- *      - Users
- *    summary: Login with email & password
- *    description: Login with email & password to get accessToken in 15m
- *    requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                  type: string
- *                  description: enter your email
- *                  example: trungduong@gmail.com
- *               password:
- *                  type: string
- *                  description: enter your password
- *                  example: 123456
- *    responses:
- *      200:
- *        description: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJOYW1lIjoiRHVvbmciLCJlbWFpbCI6InRydW5nZHVvbmdAZ21haWwuY29tIiwiaWQiOiI2M2UwODNhYjVjMTYyMzcwNjU2YTE0OTQifSwiaWF0IjoxNjc1ODQxNzE0LCJleHAiOjE2NzU4NDI2MTR9.cDeimio_-xU9HmdJ5E0DemwjHnCPKhnE6nIraNOv81g
- *      401:
- *        description: Email or Password is not Valid!
- *
- */
-
-userRouter.route('/login').post(loginUser);
 userRouter.use(validateToken);
 
 //Router for Admin to getUsers

@@ -1,11 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
-const dotenv = require('dotenv').config({ path: './config.env' });
+const dotenv = require('dotenv').config({ path: './.env' });
 const errorHandler = require('./src/app/middleware/errorHandler');
 const userRouter = require('./src/routes/UserRouter');
 const vehicleRouter = require('./src/routes/VehicleRouter');
+const authRouter = require('./src/routes/AuthRouter');
 // const bookingRouter = require("./src/routes/BookingRouter");
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -70,8 +72,11 @@ db.connect();
 //Json
 app.use(bodyParser.json());
 
+app.use(cookieParser());
+
 app.use('/api/users', userRouter);
 app.use('/api/vehicles', vehicleRouter);
+app.use('/api/auth', authRouter);
 // app.use("/bookings", bookingRouter);
 
 // Global error handler
