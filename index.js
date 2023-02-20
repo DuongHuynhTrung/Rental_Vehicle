@@ -76,6 +76,19 @@ app.use(bodyParser.json());
 
 app.use(cookieParser());
 
+const passport = require('passport');
+const expressSession = require('express-session');
+app.use(
+  expressSession({
+    secret: 'jayantpatilapp',
+    resave: true,
+    saveUninitialized: true,
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use('/api/users', userRouter);
 app.use('/api/vehicles', vehicleRouter);
 app.use('/api/auth', authRouter);

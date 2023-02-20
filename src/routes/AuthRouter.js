@@ -1,7 +1,13 @@
 const express = require('express');
 const authRouter = express.Router();
 const loginLimiter = require('../app/middleware/loginLimiter');
-const { login, refresh, logout } = require('../app/controllers/AuthController');
+const passport = require('passport');
+const {
+  login,
+  refresh,
+  logout,
+  loginOauth,
+} = require('../app/controllers/AuthController');
 
 /**
  * @swagger
@@ -75,5 +81,48 @@ authRouter.route('/refresh').get(refresh);
  */
 
 authRouter.route('/logout').post(logout);
+
+/* FACEBOOK ROUTER */
+authRouter.get(
+  '/login/facebook',
+  passport.authenticate('facebook', { scope: ['profile', 'email'] })
+);
+
+authRouter.get(
+  '/facebook/callback',
+  passport.authenticate('facebook', { failureRedirect: '/login' }),
+  function (req, res) {
+    res.send(req.user);
+  }
+);
+
+/* GOOGLE ROUTER */
+
+/**
+ * @swagger
+ * /api/auth/login/google:
+ *  get:
+ *    tags:
+ *      - Authentications
+ *    summary: Login with Google
+ *    description: User is authenticated with Google account
+ *    responses:
+ *      200:
+ *        description: Access Token returned
+ *      204:
+ *        description: No Content!
+ *
+ */
+
+authRouter.get(
+  '/login/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+authRouter.get(
+  '/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  loginOauth
+);
 
 module.exports = authRouter;

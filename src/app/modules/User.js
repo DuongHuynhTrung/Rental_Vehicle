@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 
 const userSchema = mongoose.Schema(
   {
+    oauth_id: {
+      type: String,
+    },
     firstName: {
       type: String,
       maxLength: 255,
@@ -14,21 +17,17 @@ const userSchema = mongoose.Schema(
     },
     gender: {
       type: String,
-      required: [true, 'Please add your gender.'],
     },
     dob: {
       type: String,
-      required: [true, 'Please add your birthday.'],
     },
     address: {
       type: String,
       maxLength: 255,
-      required: [true, 'Please add your address.'],
     },
     phone: {
       type: Number,
       maxLength: 10,
-      required: [true, 'Please add your phone.'],
       unique: [true, 'This phone number has already taken'],
     },
     email: {
@@ -40,7 +39,9 @@ const userSchema = mongoose.Schema(
     password: {
       type: String,
       maxLength: 255,
-      required: [true, 'Please add your password.'],
+    },
+    imgURL: {
+      type: String,
     },
     role_id: {
       type: mongoose.Schema.Types.ObjectId,
