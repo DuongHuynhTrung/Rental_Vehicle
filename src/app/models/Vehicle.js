@@ -20,6 +20,14 @@ const vehicleSchema = mongoose.Schema(
       type: String,
       required: [true, "Please add vehicle's insurance."],
     },
+    price: {
+      type: Number,
+      required: true,
+    },
+    isRented: {
+      type: Boolean,
+      required: true,
+    },
   },
   {
     timestamp: true,

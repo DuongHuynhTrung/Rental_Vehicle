@@ -4,11 +4,15 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const dotenv = require('dotenv').config({ path: './config.env' });
+const path = require('path');
 const errorHandler = require('./src/app/middleware/errorHandler');
 const userRouter = require('./src/routes/UserRouter');
 const vehicleRouter = require('./src/routes/VehicleRouter');
 const authRouter = require('./src/routes/AuthRouter');
-// const bookingRouter = require("./src/routes/BookingRouter");
+const filterRouter = require('./src/routes/FilterRouter');
+const bookingRouter = require('./src/routes/BookingRouter');
+const passport = require('passport');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -41,10 +45,10 @@ const options = {
     },
     servers: [
       {
-        url: `https://rental-vehicle-na07.onrender.com`,
+        url: `http://localhost:${PORT}`,
       },
       {
-        url: `http://localhost:${PORT}`,
+        url: `https://rental-vehicle-na07.onrender.com`,
       },
     ],
     components: {
@@ -74,25 +78,31 @@ db.connect();
 //Json
 app.use(bodyParser.json());
 
+// cookies Parser
 app.use(cookieParser());
 
-const passport = require('passport');
-const expressSession = require('express-session');
-app.use(
-  expressSession({
-    secret: 'jayantpatilapp',
-    resave: true,
-    saveUninitialized: true,
-  })
-);
+// const expressSession = require('express-session');
+
+// app.use(
+//   expressSession({
+//     secret: 'jayantpatilapp',
+//     resave: true,
+//     saveUninitialized: true,
+//   })
+// );
 
 app.use(passport.initialize());
 app.use(passport.session());
 
+//static folder path
+app.use(express.static(path.resolve(__dirname, 'public')));
+
+// routers
 app.use('/api/users', userRouter);
 app.use('/api/vehicles', vehicleRouter);
 app.use('/api/auth', authRouter);
-// app.use("/bookings", bookingRouter);
+app.use('/api/filters', filterRouter);
+app.use('/api/bookings', bookingRouter);
 
 // Global error handler
 app.use(errorHandler);

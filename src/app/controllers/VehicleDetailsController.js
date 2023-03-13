@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
-const VehicleDetails = require('../modules/VehicleDetails');
-const Vehicle = require('../modules/Vehicle');
+const VehicleDetails = require('../models/VehicleDetails');
+const Vehicle = require('../models/Vehicle');
 
 //@desc Register New vehicleDetail
 //@route POST /api/vehicles/vehicleDetails/:licensePlate

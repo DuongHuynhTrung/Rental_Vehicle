@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
-const User = require('../modules/User');
-const Role = require('../modules/Role');
+const User = require('../models/User');
+const Role = require('../models/Role');
 const bcrypt = require('bcrypt');
 
 //@desc Register New user
@@ -83,11 +83,61 @@ const getUsers = asyncHandler(async (req, res, next) => {
   res.status(200).json(users);
 });
 
+//@desc Get all users
+//@route GET /api/users/current
+//@access private
+const currentUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id);
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found!');
+  }
+  res.status(200).json(user);
+});
+
+//@desc Block User
+//@route GET /api/users/blocked/:id
+//@access private
+const blockUsers = asyncHandler(async (req, res) => {
+  const user_id = req.params.id;
+  const user = await User.findById(user_id);
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found!');
+  }
+  if (req.user.roleName !== 'Admin') {
+    res.status(403);
+    throw new Error('Only admins can block users!');
+  }
+  const blockUsers = await User.findByIdAndUpdate(user_id, {
+    status: false,
+  });
+  if (!blockUsers) {
+    res.status(500);
+    throw new Error('Something went wrong in blockUsers');
+  }
+  res.status(200).json({ message: 'Blocked successfully' });
+});
+
 //@desc Current User Info
 //@route GET /api/users/current
 //@access private
-const currentUserInfo = asyncHandler(async (req, res, next) => {
-  res.json(req.user);
+const searchUserByName = asyncHandler(async (req, res, next) => {
+  const lastName = req.query.lastName;
+  if (!lastName || lastName === undefined) {
+    res.status(500);
+    throw new Error('Something went wrong when pass query to searchUserByName');
+  }
+  User.find({ lastName: { $regex: lastName, $options: 'i' } }, (err, users) => {
+    if (err) {
+      // Handle error
+      res.status(500);
+      throw new Error(err.message);
+    } else {
+      // Send the results as a JSON response to the client
+      res.json(users);
+    }
+  });
 });
 
 //@desc Get user
@@ -170,5 +220,7 @@ module.exports = {
   getUserById,
   updateUsers,
   deleteUsers,
-  currentUserInfo,
+  searchUserByName,
+  currentUser,
+  blockUsers,
 };

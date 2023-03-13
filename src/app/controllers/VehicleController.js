@@ -1,5 +1,7 @@
 const asyncHandler = require('express-async-handler');
-const Vehicle = require('../modules/Vehicle');
+const Vehicle = require('../models/Vehicle');
+const VehicleDetails = require('../models/VehicleDetails');
+const XLSX = require('xlsx');
 
 //@desc Get all Vehicles Of User
 //@route GET /api/vehicles
@@ -26,11 +28,17 @@ const getAllVehicles = asyncHandler(async (req, res, next) => {
 });
 
 //@desc Register New Vehicle
-//@route POST /api/Vehicles/register
+//@route POST /api/Vehicles
 //@access private
 const registerVehicle = asyncHandler(async (req, res, next) => {
-  const { licensePlate, description, insurance } = req.body;
-  if (!licensePlate || !description || !insurance) {
+  const { licensePlate, description, insurance, price, isRented } = req.body;
+  if (
+    !licensePlate ||
+    !description ||
+    !insurance ||
+    !price ||
+    isRented == null
+  ) {
     res.status(400);
     throw new Error('All field not be empty!');
   }
@@ -44,6 +52,8 @@ const registerVehicle = asyncHandler(async (req, res, next) => {
     licensePlate,
     description,
     insurance,
+    price,
+    isRented,
   });
   if (vehicle) {
     res.status(201).json(vehicle);
@@ -122,6 +132,87 @@ const deleteVehicles = asyncHandler(async (req, res, next) => {
   res.status(200).json(vehicle);
 });
 
+const uploadVehicleFromExcel = async (req, res, next) => {
+  const workbook = XLSX.readFile(req.file.path, { sheetStubs: true });
+  const sheet_nameList = workbook.SheetNames;
+  let x = 0;
+  let count = 0;
+  let totalVehicle = 0;
+  let totalVehicleDetails = 0;
+  sheet_nameList.forEach(async (element) => {
+    const xlData = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_nameList[x]]);
+    xlData.forEach(async (item) => {
+      count++;
+      // data from excel file
+      const licensePlate = item.licensePlate;
+      const description = item.description;
+      const insurance = item.insurance;
+      const price = item.price;
+      const vehicleType = item.vehicleType;
+      const manufacturer = item.manufacturer;
+      const model = item.model;
+      const yearOfManufacturer = item.yearOfManufacturer;
+      const fuelType = item.fuelType;
+      const transmission = item.transmission;
+
+      const isDuplicate = await Vehicle.findOne({
+        licensePlate,
+      });
+      if (!isDuplicate && insurance !== undefined && price !== undefined) {
+        const vehicle = await Vehicle.create({
+          user_id: req.user.id,
+          licensePlate,
+          description,
+          insurance,
+          price,
+          isRented: false,
+        });
+        if (vehicle) {
+          totalVehicle++;
+          const isDuplicate = await VehicleDetails.findOne({
+            licensePlate,
+          });
+          if (
+            !isDuplicate &&
+            vehicleType !== undefined &&
+            manufacturer !== undefined &&
+            model !== undefined &&
+            yearOfManufacturer !== undefined &&
+            fuelType !== undefined &&
+            transmission !== undefined
+          ) {
+            totalVehicleDetails++;
+            const vehicleDetail = await VehicleDetails.create({
+              licensePlate,
+              vehicleType,
+              manufacturer,
+              model,
+              yearOfManufacturer,
+              fuelType,
+              transmission,
+            });
+            if (!vehicleDetail) {
+              res.status(400);
+              throw new Error(
+                'Something went wrong in create vehicleDetails when loading excel file'
+              );
+            }
+          }
+        } else {
+          res.status(400);
+          throw new Error(
+            'Something went wrong with the Excel file. Please check carefully!'
+          );
+        }
+      }
+    });
+    x++;
+  });
+  res.status(201).json({
+    message: `Successfully loaded excel file! Total Vehicles: ${totalVehicle}, Total Vehicle Details: ${totalVehicleDetails}`,
+  });
+};
+
 module.exports = {
   getVehiclesOfUser,
   getAllVehicles,
@@ -129,4 +220,5 @@ module.exports = {
   getVehicleById,
   updateVehicles,
   deleteVehicles,
+  uploadVehicleFromExcel,
 };

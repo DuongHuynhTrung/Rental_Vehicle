@@ -28,7 +28,6 @@ const userSchema = mongoose.Schema(
     phone: {
       type: Number,
       maxLength: 10,
-      unique: [true, 'This phone number has already taken'],
     },
     email: {
       type: String,
@@ -43,10 +42,17 @@ const userSchema = mongoose.Schema(
     imgURL: {
       type: String,
     },
+    profit: {
+      type: Number,
+    },
     role_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Role',
       required: [true],
+    },
+    status: {
+      type: Boolean,
+      default: true,
     },
   },
   {

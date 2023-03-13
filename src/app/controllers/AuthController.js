@@ -1,6 +1,6 @@
 const asyncHandler = require('express-async-handler');
-const User = require('../modules/User');
-const Role = require('../modules/Role');
+const User = require('../models/User');
+const Role = require('../models/Role');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
@@ -19,12 +19,18 @@ const login = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ email });
   //compare password to hashedPassword
   if (user && bcrypt.compare(password, user.password)) {
+    if (!user.status) {
+      res.status(401);
+      throw new Error(
+        'User has already been blocked! Please contact the administrator!'
+      );
+    }
     const role_id = user.role_id.toString();
     const role = await Role.findById(role_id);
     const accessToken = jwt.sign(
       {
         user: {
-          userName: user.lastName,
+          lastName: user.lastName,
           email: user.email,
           roleName: role.roleName,
           role_id: user.role_id,
@@ -38,7 +44,7 @@ const login = asyncHandler(async (req, res, next) => {
     const refreshToken = jwt.sign(
       {
         user: {
-          userName: user.lastName,
+          lastName: user.lastName,
           email: user.email,
           roleName: role.roleName,
           role_id: user.role_id,
@@ -69,16 +75,21 @@ const login = asyncHandler(async (req, res, next) => {
 //@access public
 const loginOauth = asyncHandler(async (req, res, next) => {
   const authUser = req.user;
-  console.log(authUser);
   const user = await User.findOne({ oauth_id: authUser.oauth_id });
   //compare password to hashedPassword
   if (user) {
+    if (!user.status) {
+      res.status(401);
+      throw new Error(
+        'User has already been blocked! Please contact the administrator!'
+      );
+    }
     const role_id = user.role_id.toString();
     const role = await Role.findById(role_id);
     const accessToken = jwt.sign(
       {
         user: {
-          userName: user.lastName,
+          lastName: user.lastName,
           email: user.email,
           roleName: role.roleName,
           role_id: user.role_id,
@@ -92,7 +103,7 @@ const loginOauth = asyncHandler(async (req, res, next) => {
     const refreshToken = jwt.sign(
       {
         user: {
-          userName: user.lastName,
+          lastName: user.lastName,
           email: user.email,
           roleName: role.roleName,
           role_id: user.role_id,
@@ -151,7 +162,7 @@ const refresh = (req, res) => {
       const accessToken = jwt.sign(
         {
           user: {
-            userName: user.lastName,
+            lastName: user.lastName,
             email: user.email,
             roleName: role.roleName,
             role_id: user.role_id,
@@ -246,6 +257,11 @@ passport.use(
           done(null, user);
         } else {
           // if user is not preset in our database save user data to database.
+          const userEmailAvailable = await User.findOne({ email });
+          if (userEmailAvailable) {
+            res.status(400);
+            throw new Error('User has already registered with Email!');
+          }
           user = await User.create(newUser);
           done(null, user);
         }

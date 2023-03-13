@@ -8,7 +8,9 @@ const {
   getUserById,
   updateUsers,
   deleteUsers,
-  currentUserInfo,
+  searchUserByName,
+  currentUser,
+  blockUsers,
 } = require('../app/controllers/UserController');
 const {
   getDrivingLicenseOfUser,
@@ -173,7 +175,107 @@ userRouter
 
   .get(getUsers);
 
-userRouter.get('/current', currentUserInfo);
+/**
+ * @swagger
+ * /api/users/search:
+ *  get:
+ *    tags:
+ *      - Users
+ *    summary: Search User by last name
+ *    description: Retrieve a list of users with relative name from users table
+ *    parameters:
+ *      - name: lastName
+ *        in: query
+ *        description: The name to search for
+ *        Required: true
+ *        schema:
+ *          type: string
+ *        example: Duong
+ *    responses:
+ *      200:
+ *        description: A list of users.
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                description:
+ *                  type: string
+ *                  example: Successfully fetched all data!
+ *                data:
+ *                  type: array
+ *                  items:
+ *                    $ref: '#/components/schemas/User'
+ *      500:
+ *        description: Something went wrong when pass query to searchUserByName
+ *
+ */
+userRouter.get('/search', searchUserByName);
+
+/**
+ * @swagger
+ * /api/users/current:
+ *  get:
+ *    tags:
+ *      - Users
+ *    summary: Retrieve information about the current user
+ *    description: Retrieve information about the current user
+ *    responses:
+ *      200:
+ *        description: Retrieve information about the current user
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                description:
+ *                  type: string
+ *                  example: Successfully fetched all data!
+ *                data:
+ *                  type: array
+ *                  items:
+ *                    $ref: '#/components/schemas/User'
+ *      404:
+ *        description: User not found!
+ *
+ */
+userRouter.get('/current', currentUser);
+
+/**
+ * @swagger
+ * /api/users/blocked/{id}:
+ *  get:
+ *    tags:
+ *      - Users
+ *    summary: Admin blocked user who violate the rules
+ *    description: Admin blocked user who violate the rules
+ *    parameters:
+ *      - name: id
+ *        in: path
+ *        required: true
+ *        description: userId
+ *        type: string
+ *    responses:
+ *      200:
+ *        description: Admin blocked user who violate the rules
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                description:
+ *                  type: string
+ *                  example: Blocked successfully
+ *
+ *      403:
+ *        description: Only admins can block users!
+ *      404:
+ *        description: User not found!
+ *      500:
+ *        description: Something went wrong in blockUsers
+ *
+ */
+userRouter.get('/blocked/:id', blockUsers);
 
 /**
  *  @swagger

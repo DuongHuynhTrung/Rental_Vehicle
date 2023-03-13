@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler');
-const DrivingLicense = require('../modules/DrivingLicense');
+const DrivingLicense = require('../models/DrivingLicense');
 
 //@desc Get drivingLicense Of User
 //@route GET /api/users/drivingLicense

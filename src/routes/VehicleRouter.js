@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const vehicleRouter = express.Router();
+const multer = require('multer');
+
 const {
   getVehiclesOfUser,
   getAllVehicles,
@@ -8,6 +10,7 @@ const {
   getVehicleById,
   updateVehicles,
   deleteVehicles,
+  uploadVehicleFromExcel,
 } = require('../app/controllers/VehicleController');
 const {
   createVehicleDetail,
@@ -41,6 +44,14 @@ vehicleRouter.use(bodyParser.json());
  *            type: string
  *            description: enter vehicle's insurance
  *            example: 2 năm
+ *          price:
+ *            type: number
+ *            description: enter vehicle's price
+ *            example: 500000
+ *          isRented:
+ *            type: boolean
+ *            description: please check is vehicle rented
+ *            example: true
  */
 
 /**
@@ -554,5 +565,19 @@ vehicleRouter
    */
 
   .delete(deleteVehicleDetailsByVehicleID);
+
+//multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './src/public/uploads');
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
+
+vehicleRouter.post('/upload', upload.single('excel'), uploadVehicleFromExcel);
 
 module.exports = vehicleRouter;
