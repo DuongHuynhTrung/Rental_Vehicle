@@ -81,15 +81,15 @@ app.use(bodyParser.json());
 // cookies Parser
 app.use(cookieParser());
 
-// const expressSession = require('express-session');
+const expressSession = require('express-session');
 
-// app.use(
-//   expressSession({
-//     secret: 'jayantpatilapp',
-//     resave: true,
-//     saveUninitialized: true,
-//   })
-// );
+app.use(
+  expressSession({
+    secret: 'jayantpatilapp',
+    resave: true,
+    saveUninitialized: true,
+  })
+);
 
 app.use(passport.initialize());
 app.use(passport.session());
