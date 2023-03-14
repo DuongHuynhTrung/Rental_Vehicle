@@ -16,10 +16,8 @@ const passport = require('passport');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const corsOptions = {
-  origin: ['*'],
-};
-app.use(cors(corsOptions));
+app.use(cors());
+
 app.use(function (req, res, next) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader(

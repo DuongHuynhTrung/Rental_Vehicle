@@ -31,6 +31,9 @@ const vehicleDetailsSchema = mongoose.Schema(
       type: String,
       required: [true, "Please select vehicle's transmission"],
     },
+    images: {
+      type: Array,
+    },
   },
   {
     timestamp: true,
