@@ -216,12 +216,99 @@ passport.use(
         let user = await User.findOne({ oauth_id: profile.id });
 
         if (user) {
-          //If user present in our database.
-          done(null, user);
+          if (!user.status) {
+            res.status(401);
+            throw new Error(
+              'User has already been blocked! Please contact the administrator!'
+            );
+          }
+          const role_id = user.role_id.toString();
+          const role = await Role.findById(role_id);
+          const accessToken = jwt.sign(
+            {
+              user: {
+                lastName: user.lastName,
+                email: user.email,
+                roleName: role.roleName,
+                role_id: user.role_id,
+                id: user.id,
+              },
+            },
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: '1d' }
+          );
+
+          const refreshToken = jwt.sign(
+            {
+              user: {
+                lastName: user.lastName,
+                email: user.email,
+                roleName: role.roleName,
+                role_id: user.role_id,
+                id: user.id,
+              },
+            },
+            process.env.REFRESH_TOKEN_SECRET,
+            { expiresIn: '7d' }
+          );
+
+          // Create secure cookie with refresh token
+          // res.cookie('jwt', refreshToken, {
+          //   httpOnly: true, //accessible only by web server
+          //   secure: true, //https
+          //   sameSite: 'None', //cross-site cookie
+          //   maxAge: 7 * 24 * 60 * 60 * 1000, //cookie expiry: set to match rT
+          // });
+
+          // res.status(200).json({ accessToken });
+          done(null, { accessToken });
         } else {
           // if user is not preset in our database save user data to database.
           user = await User.create(newUser);
-          done(null, user);
+          if (!user.status) {
+            res.status(401);
+            throw new Error(
+              'User has already been blocked! Please contact the administrator!'
+            );
+          }
+          const role_id = user.role_id.toString();
+          const role = await Role.findById(role_id);
+          const accessToken = jwt.sign(
+            {
+              user: {
+                lastName: user.lastName,
+                email: user.email,
+                roleName: role.roleName,
+                role_id: user.role_id,
+                id: user.id,
+              },
+            },
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: '1d' }
+          );
+
+          const refreshToken = jwt.sign(
+            {
+              user: {
+                lastName: user.lastName,
+                email: user.email,
+                roleName: role.roleName,
+                role_id: user.role_id,
+                id: user.id,
+              },
+            },
+            process.env.REFRESH_TOKEN_SECRET,
+            { expiresIn: '7d' }
+          );
+
+          // Create secure cookie with refresh token
+          // res.cookie('jwt', refreshToken, {
+          //   httpOnly: true, //accessible only by web server
+          //   secure: true, //https
+          //   sameSite: 'None', //cross-site cookie
+          //   maxAge: 7 * 24 * 60 * 60 * 1000, //cookie expiry: set to match rT
+          // });
+          done(null, { accessToken });
         }
       } catch (err) {
         console.error(err);
