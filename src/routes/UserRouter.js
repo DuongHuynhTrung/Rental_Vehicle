@@ -11,6 +11,8 @@ const {
   searchUserByName,
   currentUser,
   blockUsers,
+  updateRoleToHotelier,
+  changePassword,
 } = require('../app/controllers/UserController');
 const {
   getDrivingLicenseOfUser,
@@ -629,5 +631,79 @@ userRouter
    */
 
   .delete(deleteUsers);
+
+/**
+ * @swagger
+ * /api/users/upRole/{id}:
+ *  get:
+ *    tags:
+ *      - Users
+ *    summary: Update role User To Hotelier
+ *    description: Update role User To Hotelier
+ *    parameters:
+ *      - name: id
+ *        in: path
+ *        required: true
+ *        description: User id
+ *        type: string
+ *    responses:
+ *      200:
+ *        description: Successfully update role User to Hotelier
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                description:
+ *                  type: string
+ *                  example: Successfully update role User to Hotelier!
+ *                data:
+ *                  type: array
+ *                  items:
+ *                    $ref: '#/components/schemas/User'
+ *      403:
+ *        description: Only Admin can update role User to Hotelier
+ *      404:
+ *        description: User Not Found!
+ *
+ */
+userRouter.route('/upRole/:id').get(updateRoleToHotelier);
+
+/**
+ * @swagger
+ * /api/users/changePassword/{id}:
+ *  post:
+ *    tags:
+ *      - Users
+ *    summary: User change password
+ *    description: User change password
+ *    parameters:
+ *      - name: id
+ *        in: path
+ *        required: true
+ *        description: User id
+ *        type: string
+ *    responses:
+ *      200:
+ *        description: Successfully User change password
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                description:
+ *                  type: string
+ *                  example: Successfully User change password!
+ *                data:
+ *                  type: array
+ *                  items:
+ *                    $ref: '#/components/schemas/User'
+ *      403:
+ *        description: Only Admin can User change password
+ *      404:
+ *        description: User Not Found!
+ *
+ */
+userRouter.route('/changePassword/:id').post(changePassword);
 
 module.exports = userRouter;

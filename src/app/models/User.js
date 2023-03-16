@@ -23,7 +23,6 @@ const userSchema = mongoose.Schema(
     },
     address: {
       type: String,
-      maxLength: 255,
     },
     phone: {
       type: Number,
@@ -37,7 +36,6 @@ const userSchema = mongoose.Schema(
     },
     password: {
       type: String,
-      maxLength: 255,
     },
     imgURL: {
       type: String,

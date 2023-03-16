@@ -166,22 +166,12 @@ const updateUsers = asyncHandler(async (req, res, next) => {
     res.status(404);
     throw new Error('User Not Found!');
   }
-  const { firstName, lastName, gender, dob, address, phone, password } =
-    req.body;
-  if (
-    !firstName ||
-    !lastName ||
-    !gender ||
-    !dob ||
-    !address ||
-    !phone ||
-    !password
-  ) {
+  const { firstName, lastName, gender, dob, address, phone } = req.body;
+  if (!firstName || !lastName || !gender || !dob || !address || !phone) {
     res.status(400);
     throw new Error('All field not be empty!');
   }
-  const userEmail = user.email;
-  if (!(req.user.email === userEmail || req.user.roleName === 'Admin')) {
+  if (req.user.email !== user.email) {
     res.status(403);
     throw new Error("You don't have permission to update user's profile");
   }
@@ -205,13 +195,85 @@ const deleteUsers = asyncHandler(async (req, res, next) => {
     res.status(404);
     throw new Error('User Not Found!');
   }
-  const userEmail = user.email;
-  if (!(req.user.email === userEmail || req.user.roleName === 'Admin')) {
+  if (req.user.roleName !== 'Admin') {
     res.status(403);
     throw new Error("You don't have permission to update user's profile");
   }
   await User.deleteOne({ _id: req.params.id });
   res.status(200).json(user);
+});
+
+//@desc update Role of user to Hotelier
+//@route GET /api/users/upRole/:id
+//@access private
+const updateRoleToHotelier = asyncHandler(async (req, res, next) => {
+  const user_id = req.params.id;
+  const user = await User.findById(user_id);
+  if (!user) {
+    res.status(404);
+    throw new Error('User not Found!');
+  }
+  if (req.user.roleName !== 'Admin') {
+    res.status(403);
+    throw new Error('Only Admin can update role of User to Hotelier');
+  }
+  const updateRole = await User.findByIdAndUpdate(
+    user_id,
+    {
+      role_id: '63e4736f62bf96d8df480f5a',
+    },
+    { new: true }
+  );
+  if (!updateRole) {
+    res.status(500);
+    throw new Error('Something when wrong in update Role User to Hotelier!');
+  }
+  res.status(200).json(updateRole);
+});
+
+//@desc User change
+//@route GET /api/users/changePassword/:id
+//@access private
+const changePassword = asyncHandler(async (req, res, next) => {
+  const user_id = req.params.id;
+  const user = await User.findById(user_id);
+  if (!user) {
+    res.status(404);
+    throw new Error('User not Found!');
+  }
+  if (req.user.id !== user_id) {
+    res.status(403);
+    throw new Error("You don't have permission to change other password!");
+  }
+  const { password, confirmPassword } = req.body;
+  if (!password || !confirmPassword) {
+    res.status(400);
+    throw new Error('All field not be empty!');
+  }
+  if (password !== confirmPassword) {
+    res.status(400);
+    throw new Error('Password and confirm password are different!');
+  }
+  //Hash password
+  const hashedPassword = await bcrypt.hash(password, 10);
+  if (!hashedPassword) {
+    res.status(500);
+    throw new Error(
+      'Something when wrong in hashPassword of changePassword function!'
+    );
+  }
+  const updatePassword = await User.findByIdAndUpdate(
+    user_id,
+    {
+      password: hashedPassword,
+    },
+    { new: true }
+  );
+  if (!updatePassword) {
+    res.status(500);
+    throw new Error('Something when wrong in changePassword');
+  }
+  res.status(200).json(updatePassword);
 });
 
 module.exports = {
@@ -223,4 +285,6 @@ module.exports = {
   searchUserByName,
   currentUser,
   blockUsers,
+  updateRoleToHotelier,
+  changePassword,
 };
