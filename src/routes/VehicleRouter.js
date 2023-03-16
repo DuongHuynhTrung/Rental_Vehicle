@@ -84,6 +84,82 @@ vehicleRouter.use(bodyParser.json());
 
 vehicleRouter.route('/home').get(getAllVehicles);
 
+/**
+ * @swagger
+ * /api/vehicles/{licensePlate}:
+ *  get:
+ *    tags:
+ *      - Vehicles
+ *    summary: Retrieve a vehicles by vehicle licensePlate
+ *    description: Retrieve a vehicles by vehicle licensePlate
+ *    parameters:
+ *      - name: licensePlate
+ *        in: path
+ *        required: true
+ *        description: Vehicle licensePlate
+ *        type: string
+ *    responses:
+ *      200:
+ *        description: Vehicle information
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                description:
+ *                  type: string
+ *                  example: Successfully fetched vehicle's data!
+ *                data:
+ *                  type: array
+ *                  items:
+ *                    $ref: '#/components/schemas/Vehicle'
+ *      403:
+ *        description: You don't have permission to update vehicle's profile
+ *      404:
+ *        description: User Not Found!
+ *
+ */
+
+vehicleRouter.route('/:licensePlate').get(getVehicleById);
+
+/**
+ * @swagger
+ * /api/vehicles/vehicleDetails/{licensePlate}:
+ *  get:
+ *    tags:
+ *      - Vehicle Details
+ *    summary: Retrieve a vehicle details by vehicle licensePlate
+ *    description: Retrieve a vehicle details by vehicle licensePlate
+ *    parameters:
+ *      - name: licensePlate
+ *        in: path
+ *        required: true
+ *        description: Vehicle licensePlate
+ *        type: string
+ *    responses:
+ *      200:
+ *        description: Vehicle Details information
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                description:
+ *                  type: string
+ *                  example: Successfully fetched vehicle's details data!
+ *                data:
+ *                  type: array
+ *                  items:
+ *                    $ref: '#/components/schemas/Vehicle_Details'
+ *      404:
+ *        description: Vehicle don't have Details. Please add one!
+ *
+ */
+
+vehicleRouter
+  .route('/vehicleDetails/:licensePlate')
+  .get(getVehicleDetailByVehicleID);
+
 vehicleRouter.use(validateToken);
 vehicleRouter
   .route('/')
@@ -179,44 +255,6 @@ vehicleRouter
     res.setHeader('Content-Type', 'json/plain');
     next();
   })
-
-  /**
-   * @swagger
-   * /api/vehicles/{licensePlate}:
-   *  get:
-   *    tags:
-   *      - Vehicles
-   *    summary: Retrieve a vehicles by vehicle licensePlate
-   *    description: Retrieve a vehicles by vehicle licensePlate
-   *    parameters:
-   *      - name: licensePlate
-   *        in: path
-   *        required: true
-   *        description: Vehicle licensePlate
-   *        type: string
-   *    responses:
-   *      200:
-   *        description: Vehicle information
-   *        content:
-   *          application/json:
-   *            schema:
-   *              type: object
-   *              properties:
-   *                description:
-   *                  type: string
-   *                  example: Successfully fetched vehicle's data!
-   *                data:
-   *                  type: array
-   *                  items:
-   *                    $ref: '#/components/schemas/Vehicle'
-   *      403:
-   *        description: You don't have permission to update vehicle's profile
-   *      404:
-   *        description: User Not Found!
-   *
-   */
-
-  .get(getVehicleById)
 
   /**
    * @swagger
@@ -424,42 +462,6 @@ vehicleRouter
    */
 
   .post(createVehicleDetail)
-
-  /**
-   * @swagger
-   * /api/vehicles/vehicleDetails/{licensePlate}:
-   *  get:
-   *    tags:
-   *      - Vehicle Details
-   *    summary: Retrieve a vehicle details by vehicle licensePlate
-   *    description: Retrieve a vehicle details by vehicle licensePlate
-   *    parameters:
-   *      - name: licensePlate
-   *        in: path
-   *        required: true
-   *        description: Vehicle licensePlate
-   *        type: string
-   *    responses:
-   *      200:
-   *        description: Vehicle Details information
-   *        content:
-   *          application/json:
-   *            schema:
-   *              type: object
-   *              properties:
-   *                description:
-   *                  type: string
-   *                  example: Successfully fetched vehicle's details data!
-   *                data:
-   *                  type: array
-   *                  items:
-   *                    $ref: '#/components/schemas/Vehicle_Details'
-   *      404:
-   *        description: Vehicle don't have Details. Please add one!
-   *
-   */
-
-  .get(getVehicleDetailByVehicleID)
 
   /**
    * @swagger

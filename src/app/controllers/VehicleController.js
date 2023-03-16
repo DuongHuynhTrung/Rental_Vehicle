@@ -82,11 +82,6 @@ const getVehicleById = asyncHandler(async (req, res, next) => {
     res.status(404);
     throw new Error('Vehicle Not Found!');
   }
-  const userId = vehicle.user_id.toString();
-  if (req.user.id !== userId) {
-    res.status(403);
-    throw new Error("You don't have permission to get vehicle's information");
-  }
   res.status(200).json(vehicle);
 });
 
