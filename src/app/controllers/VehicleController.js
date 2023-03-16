@@ -36,6 +36,7 @@ const getAllVehicles = asyncHandler(async (req, res, next) => {
 //@access private
 const registerVehicle = asyncHandler(async (req, res, next) => {
   const { licensePlate, description, insurance, price, isRented } = req.body;
+  let { image } = req.body;
   if (
     !licensePlate ||
     !description ||
@@ -51,12 +52,16 @@ const registerVehicle = asyncHandler(async (req, res, next) => {
     res.status(400);
     throw new Error('Vehicle has already registered with License Plates!');
   }
+  if (image === undefined) {
+    image = '';
+  }
   const vehicle = await Vehicle.create({
     user_id: req.user.id,
     licensePlate,
     description,
     insurance,
     price,
+    image,
     isRented,
   });
   if (vehicle) {
