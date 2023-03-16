@@ -25,7 +25,7 @@ const vehicleSchema = mongoose.Schema(
       required: true,
     },
     image: {
-      type: Array,
+      type: String,
     },
     isRented: {
       type: Boolean,

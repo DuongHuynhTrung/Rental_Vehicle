@@ -100,8 +100,8 @@ const updateVehicles = asyncHandler(async (req, res, next) => {
     res.status(404);
     throw new Error('Vehicle Not Found!');
   }
-  const { description, insurance } = req.body;
-  if (!description || !insurance) {
+  const { description, insurance, image, price } = req.body;
+  if (!description || !insurance || image || price) {
     res.status(400);
     throw new Error('All field not be empty!');
   }
@@ -157,6 +157,7 @@ const uploadVehicleFromExcel = async (req, res, next) => {
       const description = item.description;
       const insurance = item.insurance;
       const price = item.price;
+      const image = item.image;
       const vehicleType = item.vehicleType;
       const manufacturer = item.manufacturer;
       const model = item.model;
@@ -167,13 +168,19 @@ const uploadVehicleFromExcel = async (req, res, next) => {
       const isDuplicate = await Vehicle.findOne({
         licensePlate,
       });
-      if (!isDuplicate && insurance !== undefined && price !== undefined) {
+      if (
+        !isDuplicate &&
+        insurance !== undefined &&
+        price !== undefined &&
+        image !== undefined
+      ) {
         const vehicle = await Vehicle.create({
           user_id: req.user.id,
           licensePlate,
           description,
           insurance,
           price,
+          image,
           isRented: false,
         });
         if (vehicle) {
