@@ -75,7 +75,7 @@ const getUsers = asyncHandler(async (req, res, next) => {
     res.status(403);
     throw new Error('Only Admin have permission to see all User');
   }
-  const users = await User.find();
+  const users = await User.find().populate('role_id').exec();
   if (users.length === 0) {
     res.status(404);
     throw new Error("Website don't have any member!");
@@ -150,7 +150,7 @@ const getUserById = asyncHandler(async (req, res, next) => {
     throw new Error('User Not Found!');
   }
   const userEmail = user.email;
-  if (!(req.user.email === userEmail || req.user.email === adminMail)) {
+  if (!(req.user.email === userEmail || req.user.roleName === 'Admin')) {
     res.status(403);
     throw new Error("You don't have permission to get user's profile");
   }
@@ -181,7 +181,7 @@ const updateUsers = asyncHandler(async (req, res, next) => {
     throw new Error('All field not be empty!');
   }
   const userEmail = user.email;
-  if (!(req.user.email === userEmail || req.user.email === adminMail)) {
+  if (!(req.user.email === userEmail || req.user.roleName === 'Admin')) {
     res.status(403);
     throw new Error("You don't have permission to update user's profile");
   }
@@ -206,7 +206,7 @@ const deleteUsers = asyncHandler(async (req, res, next) => {
     throw new Error('User Not Found!');
   }
   const userEmail = user.email;
-  if (!(req.user.email === userEmail || req.user.email === adminMail)) {
+  if (!(req.user.email === userEmail || req.user.roleName === 'Admin')) {
     res.status(403);
     throw new Error("You don't have permission to update user's profile");
   }

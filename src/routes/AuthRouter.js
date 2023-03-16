@@ -125,9 +125,10 @@ authRouter.get(
   '/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
   // loginOauth
-  function (req, res) {
-    res.redirect('/api/auth/login/authOauth');
-  }
+  // function (req, res) {
+  //   res.redirect('/api/auth/login/authOauth');
+  // }
+  loginOauth
 );
 
 module.exports = authRouter;

@@ -2,6 +2,7 @@ const asyncHandler = require('express-async-handler');
 const Vehicle = require('../models/Vehicle');
 const VehicleDetails = require('../models/VehicleDetails');
 const XLSX = require('xlsx');
+const User = require('../models/User');
 
 //@desc Get all Vehicles Of User
 //@route GET /api/vehicles
@@ -19,7 +20,10 @@ const getVehiclesOfUser = asyncHandler(async (req, res, next) => {
 //@route GET /api/vehicles/home
 //@access private
 const getAllVehicles = asyncHandler(async (req, res, next) => {
-  const vehicles = await Vehicle.find();
+  const vehicles = await Vehicle.find().populate('user_id').exec();
+  vehicles.forEach((item) => {
+    console.log(item.user_id.lastName);
+  });
   if (vehicles.length === 0) {
     res.status(404);
     throw new Error("Website don't have any Vehicle!");
