@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Role = require('../models/Role');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
+const moment = require('moment/moment');
 
 //@desc Register New user
 //@route POST /api/users/register
@@ -368,6 +369,72 @@ const forgotPassword = async (req, res) => {
   }
 };
 
+const resetPassword = asyncHandler(async (req, res, next) => {
+  const { email, otp } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      res.status(404);
+      throw new Error('User not found');
+    }
+    if (user.otp.toString() !== otp) {
+      res.status(400);
+      throw new Error('Wrong OTP! Please try again');
+    }
+    const currentTime = moment(new Date());
+    const otpExpires = moment(user.otpExpires);
+    const isExpired = currentTime.diff(otpExpires, 'minutes');
+    if (isExpired > 10) {
+      res.status(400);
+      throw new Error('OTP is expired! Please try again');
+    }
+    const newPassword = Math.floor(100000 + Math.random() * 900000);
+    const hashedPassword = await bcrypt.hash(newPassword.toString(), 10);
+    const updateUser = await User.findByIdAndUpdate(
+      user._id,
+      {
+        password: hashedPassword,
+      },
+      { new: true }
+    );
+    if (!updateUser) {
+      res.status(500);
+      throw new Error(
+        'Something went wrong when updating new password in reset password!'
+      );
+    }
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true, // use SSL
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.PASSWORD,
+      },
+    });
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: email,
+      subject: 'Reset Password Successfully',
+      text: `This is your new password: ${newPassword}. Please login to continue!`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log(`Email sent: ${info.response}`);
+      }
+    });
+
+    res.status(200).json('Reset password successfully');
+  } catch (error) {
+    console.log(error);
+    throw new Error(error);
+  }
+});
+
 module.exports = {
   registerUser,
   getUsers,
@@ -382,4 +449,5 @@ module.exports = {
   changePassword,
   updateAvatarUser,
   forgotPassword,
+  resetPassword,
 };

@@ -16,6 +16,7 @@ const {
   checkOldPassword,
   updateAvatarUser,
   forgotPassword,
+  resetPassword,
 } = require('../app/controllers/UserController');
 const {
   getDrivingLicenseOfUser,
@@ -139,6 +140,10 @@ const multer = require('multer');
  */
 
 userRouter.route('/register').post(registerUser);
+
+userRouter.post('/forgotPassword', forgotPassword);
+
+userRouter.post('/resetPassword', resetPassword);
 
 userRouter.use(validateToken);
 
@@ -295,8 +300,6 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 userRouter.put('/avatar', upload.single('image'), updateAvatarUser);
-
-userRouter.post('/forgotPassword', forgotPassword);
 
 /**
  *  @swagger
