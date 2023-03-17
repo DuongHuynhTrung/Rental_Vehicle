@@ -234,7 +234,7 @@ const updateRoleToHotelier = asyncHandler(async (req, res, next) => {
   res.status(200).json(updateRole);
 });
 
-//@desc User change
+//@desc User change password
 //@route GET /api/users/changePassword/:id
 //@access private
 const changePassword = asyncHandler(async (req, res, next) => {
@@ -279,6 +279,28 @@ const changePassword = asyncHandler(async (req, res, next) => {
   res.status(200).json(updatePassword);
 });
 
+//@desc User update profile image
+//@route GET /api/users/profile
+//@access private
+const updateProfileUser = asyncHandler(async (req, res) => {
+  const user_id = req.user.id;
+  const imgURL = req.file.filename;
+  const updateProfile = await User.findByIdAndUpdate(
+    user_id,
+    {
+      imgURL,
+    },
+    {
+      new: true,
+    }
+  );
+  if (!updateProfile) {
+    res.status(500);
+    throw new Error('Something wrong when wrong in updateProfile');
+  }
+  res.status(200).json(updateProfile);
+});
+
 module.exports = {
   registerUser,
   getUsers,
@@ -290,4 +312,5 @@ module.exports = {
   blockUsers,
   updateRoleToHotelier,
   changePassword,
+  updateProfileUser,
 };

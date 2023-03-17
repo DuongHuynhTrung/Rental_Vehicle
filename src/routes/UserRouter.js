@@ -13,6 +13,7 @@ const {
   blockUsers,
   updateRoleToHotelier,
   changePassword,
+  updateProfileUser,
 } = require('../app/controllers/UserController');
 const {
   getDrivingLicenseOfUser,
@@ -21,6 +22,7 @@ const {
   deleteDrivingLicense,
 } = require('../app/controllers/DrivingLicenseController');
 const validateToken = require('../app/middleware/validateTokenHandler');
+const multer = require('multer');
 
 /**
  *  @swagger
@@ -278,6 +280,19 @@ userRouter.get('/current', currentUser);
  *
  */
 userRouter.get('/blocked/:id', blockUsers);
+
+// config multer to update image
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './src/public/images');
+  },
+  filename: function (req, file, callback) {
+    callback(null, file.originalname); // this is how the files will be named
+  },
+});
+const upload = multer({ storage: storage });
+
+userRouter.put('/profile', upload.single('image'), updateProfileUser);
 
 /**
  *  @swagger
