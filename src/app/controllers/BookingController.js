@@ -4,7 +4,28 @@ const User = require('../models/User');
 const Vehicle = require('../models/Vehicle');
 
 //@desc Get all Booking Of User
-//@route GET /api/booking/:userId
+//@route GET /api/bookings/hotelier
+//@access private
+const getAllBookingsOfHotelier = asyncHandler(async (req, res, next) => {
+  const vehicle = await Vehicle.find({ user_id: req.user.id });
+  const allBookings = await Booking.find();
+  let bookings = [];
+  vehicle.forEach((vehicle) => {
+    allBookings.forEach((booking) =>
+      booking.licensePlate === vehicle.licensePlate
+        ? bookings.push(booking)
+        : null
+    );
+  });
+  if (bookings.length === 0) {
+    res.status(404);
+    throw new Error("Hotelier don't have any Booking!");
+  }
+  res.status(200).json(bookings);
+});
+
+//@desc Get all Booking Of User
+//@route GET /api/bookings
 //@access private
 const getAllBookingsOfUser = asyncHandler(async (req, res, next) => {
   const bookings = await Booking.find({ user_id: req.user.id });
@@ -265,4 +286,5 @@ module.exports = {
   cancelBooking,
   deleteBookingsForAdmin,
   returnVehicleAfterBooking,
+  getAllBookingsOfHotelier,
 };

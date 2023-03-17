@@ -11,6 +11,7 @@ const {
   getAllBookingsOfUser,
   deleteBookingsForAdmin,
   returnVehicleAfterBooking,
+  getAllBookingsOfHotelier,
 } = require('../app/controllers/BookingController');
 const {
   createBookingDetails,
@@ -143,6 +144,35 @@ bookingRouter
    */
 
   .get(getAllBookingsOfUser);
+
+/**
+ * @swagger
+ * /api/bookings/hotelier:
+ *  get:
+ *    tags:
+ *      - Bookings
+ *    summary: Get all booking of a Hotelier
+ *    description: Get all booking of a Hotelier
+ *    responses:
+ *      200:
+ *        description: Return all booking of a Hotelier
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                description:
+ *                  type: string
+ *                  example: Get all booking of a Hotelier
+ *                data:
+ *                  type: array
+ *                  items:
+ *                    $ref: '#/components/schemas/Booking'
+ *      404:
+ *        description: Hotelier don't have any Booking!
+ *
+ */
+bookingRouter.route('/hotelier').get(getAllBookingsOfHotelier);
 
 /**
  * @swagger

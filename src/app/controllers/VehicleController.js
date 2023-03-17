@@ -21,9 +21,6 @@ const getVehiclesOfUser = asyncHandler(async (req, res, next) => {
 //@access private
 const getAllVehicles = asyncHandler(async (req, res, next) => {
   const vehicles = await Vehicle.find().populate('user_id').exec();
-  vehicles.forEach((item) => {
-    console.log(item.user_id.lastName);
-  });
   if (vehicles.length === 0) {
     res.status(404);
     throw new Error("Website don't have any Vehicle!");
