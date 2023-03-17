@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const Role = require('../models/Role');
+const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 
 //@desc Register New user
@@ -235,6 +236,21 @@ const updateRoleToHotelier = asyncHandler(async (req, res, next) => {
 });
 
 //@desc User change password
+//@route GET /api/users/checkOldPassword/:id
+//@access private
+const checkOldPassword = asyncHandler(async (req, res) => {
+  const id = req.params.id;
+  const { password } = req.body;
+  const user = await User.findById(id);
+  const isCorrectPassword = await bcrypt.compare(password, user.password);
+  if (!isCorrectPassword) {
+    res.status(401);
+    throw new Error('Old password is incorrect');
+  }
+  res.status(200).json(user);
+});
+
+//@desc User change password
 //@route GET /api/users/changePassword/:id
 //@access private
 const changePassword = asyncHandler(async (req, res, next) => {
@@ -282,7 +298,7 @@ const changePassword = asyncHandler(async (req, res, next) => {
 //@desc User update profile image
 //@route GET /api/users/profile
 //@access private
-const updateProfileUser = asyncHandler(async (req, res) => {
+const updateAvatarUser = asyncHandler(async (req, res) => {
   const user_id = req.user.id;
   const imgURL = req.file.filename;
   const updateProfile = await User.findByIdAndUpdate(
@@ -301,6 +317,56 @@ const updateProfileUser = asyncHandler(async (req, res) => {
   res.status(200).json(updateProfile);
 });
 
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      res.status(404);
+      throw new Error('User not found');
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+
+    user.otp = otp;
+    await user.save();
+
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true, // use SSL
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.PASSWORD,
+      },
+    });
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: email,
+      subject: 'Reset Password OTP',
+      text: `Your OTP to reset your password is ${otp}`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log(`Email sent: ${info.response}`);
+      }
+    });
+
+    res.status(200).json('OTP sent to email');
+  } catch (error) {
+    console.log(error);
+    res.status(500);
+    throw new Error(
+      'Something went wrong when sending email to reset password'
+    );
+  }
+};
+
 module.exports = {
   registerUser,
   getUsers,
@@ -311,6 +377,8 @@ module.exports = {
   currentUser,
   blockUsers,
   updateRoleToHotelier,
+  checkOldPassword,
   changePassword,
-  updateProfileUser,
+  updateAvatarUser,
+  forgotPassword,
 };

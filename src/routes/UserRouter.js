@@ -13,7 +13,9 @@ const {
   blockUsers,
   updateRoleToHotelier,
   changePassword,
-  updateProfileUser,
+  checkOldPassword,
+  updateAvatarUser,
+  forgotPassword,
 } = require('../app/controllers/UserController');
 const {
   getDrivingLicenseOfUser,
@@ -292,7 +294,9 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-userRouter.put('/profile', upload.single('image'), updateProfileUser);
+userRouter.put('/avatar', upload.single('image'), updateAvatarUser);
+
+userRouter.post('/forgotPassword', forgotPassword);
 
 /**
  *  @swagger
@@ -686,8 +690,44 @@ userRouter.route('/upRole/:id').get(updateRoleToHotelier);
 
 /**
  * @swagger
- * /api/users/changePassword/{id}:
+ * /api/users/checkOldPassword/{id}:
  *  post:
+ *    tags:
+ *      - Users
+ *    summary: Check old password for user is correct
+ *    description: Check old password for user is correct
+ *    parameters:
+ *      - name: id
+ *        in: path
+ *        required: true
+ *        description: User id
+ *        type: string
+ *    responses:
+ *      200:
+ *        description: Successfully Check old password for user is correct
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                description:
+ *                  type: string
+ *                  example: Successfully Check old password for user is correct!
+ *                data:
+ *                  type: array
+ *                  items:
+ *                    $ref: '#/components/schemas/User'
+ *      403:
+ *        description: Only Admin can Check old password for user is correct
+ *      404:
+ *        description: User Not Found!
+ *
+ */
+userRouter.route('/checkOldPassword/:id').post(checkOldPassword);
+/**
+ * @swagger
+ * /api/users/changePassword/{id}:
+ *  put:
  *    tags:
  *      - Users
  *    summary: User change password
@@ -719,6 +759,6 @@ userRouter.route('/upRole/:id').get(updateRoleToHotelier);
  *        description: User Not Found!
  *
  */
-userRouter.route('/changePassword/:id').post(changePassword);
+userRouter.route('/changePassword/:id').put(changePassword);
 
 module.exports = userRouter;
