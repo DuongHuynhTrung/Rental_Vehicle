@@ -44,7 +44,7 @@ const getAllBookings = asyncHandler(async (req, res, next) => {
     res.status(403);
     throw new Error('Only admin can get all Bookings!');
   }
-  const bookings = await Booking.find();
+  const bookings = await Booking.find().populate('user_id').exec();
   if (bookings.length === 0) {
     res.status(404);
     throw new Error("System don't have any bookings!");
