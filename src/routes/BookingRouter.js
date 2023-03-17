@@ -253,11 +253,11 @@ bookingRouter
   /**
    * @swagger
    * /api/bookings/{bookingId}:
-   *  get:
+   *  delete:
    *    tags:
    *      - Bookings
-   *    summary: Hotelier confirm after customer return vehicle
-   *    description: Hotelier confirm after customer return vehicle
+   *    summary: Delete Booking for admin
+   *    description: Delete Booking for admin
    *    parameters:
    *      - name: bookingId
    *        in: path
@@ -274,7 +274,7 @@ bookingRouter
    *              properties:
    *                description:
    *                  type: string
-   *                  example: Hotelier confirm after customer return vehicle
+   *                  example: Delete Booking for admin
    *                data:
    *                  type: array
    *                  items:

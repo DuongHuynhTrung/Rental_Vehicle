@@ -175,10 +175,13 @@ const updateUsers = asyncHandler(async (req, res, next) => {
     res.status(403);
     throw new Error("You don't have permission to update user's profile");
   }
-  const userAvailable = await User.findOne({ phone });
-  if (userAvailable) {
-    res.status(400);
-    throw new Error('This Phone has already Exist!');
+  const isChangePhone = user.phone.toString() !== phone ? true : false;
+  if (isChangePhone) {
+    const userAvailable = await User.findOne({ phone });
+    if (userAvailable) {
+      res.status(400);
+      throw new Error('This Phone has already Exist!');
+    }
   }
   const updateUser = await User.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
