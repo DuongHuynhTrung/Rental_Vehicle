@@ -141,8 +141,82 @@ const multer = require('multer');
 
 userRouter.route('/register').post(registerUser);
 
+/**
+ * @swagger
+ * /api/users/forgotPassword:
+ *  post:
+ *    tags:
+ *      - Users
+ *    summary: User Forgot Password
+ *    description: User Forgot Password
+ *    requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                  type: string
+ *                  description: enter your email
+ *                  example: abc@gmail.com
+ *    responses:
+ *      200:
+ *        description:  Send mail OTP successfully
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                description:
+ *                  type: string
+ *                  example: Send mail OTP successfully
+
+ *      400:
+ *        description: User not Found
+ *
+ */
 userRouter.post('/forgotPassword', forgotPassword);
 
+/**
+ * @swagger
+ * /api/users/resetPassword:
+ *  post:
+ *    tags:
+ *      - Users
+ *    summary: User verify OTP and receive new password
+ *    description: User verify OTP and receive new password
+ *    requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                  type: string
+ *                  description: enter your email
+ *                  example: abc@gmail.com
+ *               otp:
+ *                  type: string
+ *                  description: enter OTP
+ *                  example: 235122
+ *    responses:
+ *      200:
+ *        description:  Reset password successfully
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                description:
+ *                  type: string
+ *                  example: Reset password successfully
+
+ *      400:
+ *        description: User not Found
+ *
+ */
 userRouter.post('/resetPassword', resetPassword);
 
 userRouter.use(validateToken);

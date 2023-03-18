@@ -80,6 +80,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 const expressSession = require('express-session');
+const paypalRouter = require('./src/routes/PaypalRouter');
 
 app.use(
   expressSession({
@@ -101,6 +102,7 @@ app.use('/api/vehicles', vehicleRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/filters', filterRouter);
 app.use('/api/bookings', bookingRouter);
+app.use('/api/paypal', paypalRouter);
 
 // Global error handler
 app.use(errorHandler);

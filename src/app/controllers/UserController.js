@@ -243,6 +243,10 @@ const checkOldPassword = asyncHandler(async (req, res) => {
   const id = req.params.id;
   const { password } = req.body;
   const user = await User.findById(id);
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
   const isCorrectPassword = await bcrypt.compare(password, user.password);
   if (!isCorrectPassword) {
     res.status(401);
