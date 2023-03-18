@@ -147,8 +147,8 @@ userRouter.route('/register').post(registerUser);
  *  post:
  *    tags:
  *      - Users
- *    summary: User Forgot Password
- *    description: User Forgot Password
+ *    summary: User Forgot Password Can Get OTP to Reset
+ *    description: User Forgot Password Can Get OTP to Reset
  *    requestBody:
  *       required: true
  *       content:
@@ -184,8 +184,8 @@ userRouter.post('/forgotPassword', forgotPassword);
  *  post:
  *    tags:
  *      - Users
- *    summary: User verify OTP and receive new password
- *    description: User verify OTP and receive new password
+ *    summary: User verify OTP and receive new password in email
+ *    description: User verify OTP and receive new password in email
  *    requestBody:
  *       required: true
  *       content:
@@ -221,7 +221,7 @@ userRouter.post('/resetPassword', resetPassword);
 
 userRouter.use(validateToken);
 
-//Router for Admin to getUsers
+//Router for Admin to getAllUsers
 userRouter
   .route('/')
   .all((req, res, next) => {
@@ -373,6 +373,43 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
+/**
+ * @swagger
+ * /api/users/avatar:
+ *  put:
+ *    tags:
+ *      - Users
+ *    summary: User can change avatar by uploading image
+ *    description: User can change avatar by uploading image
+ *    consumes:
+ *      - multipart/form-data
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        multipart/form-data:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              image:
+ *                type: file
+ *                format: form-data
+ *                description: Image to upload
+ *    responses:
+ *      200:
+ *        description: User can change avatar by uploading image
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                description:
+ *                  type: string
+ *                  example: Blocked successfully
+ *
+ *      500:
+ *        description: Something wrong when wrong in updateProfile
+ *
+ */
 userRouter.put('/avatar', upload.single('image'), updateAvatarUser);
 
 /**
@@ -660,10 +697,6 @@ userRouter
    *                  type: string
    *                  description: enter your address
    *                  example: Ho Chi Minh
-   *               password:
-   *                  type: string
-   *                  description: enter your password
-   *                  example: 123456
    *    responses:
    *      200:
    *        description: User information updated
@@ -794,8 +827,8 @@ userRouter.route('/upRole/:id').get(updateRoleToHotelier);
  *                  type: array
  *                  items:
  *                    $ref: '#/components/schemas/User'
- *      403:
- *        description: Only Admin can Check old password for user is correct
+ *      401:
+ *        description: Old password is incorrect
  *      404:
  *        description: User Not Found!
  *
@@ -830,10 +863,14 @@ userRouter.route('/checkOldPassword/:id').post(checkOldPassword);
  *                  type: array
  *                  items:
  *                    $ref: '#/components/schemas/User'
+ *      400:
+ *        description: Password and confirm password are different!
  *      403:
- *        description: Only Admin can User change password
+ *        description: You don't have permission to change other password!
  *      404:
  *        description: User Not Found!
+ *      500:
+ *        description: Something when wrong in changePassword
  *
  */
 userRouter.route('/changePassword/:id').put(changePassword);

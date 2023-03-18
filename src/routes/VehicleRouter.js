@@ -205,8 +205,8 @@ vehicleRouter
    *  post:
    *    tags:
    *      - Vehicles
-   *    summary: Register new Customer
-   *    description: Register new Customer
+   *    summary: Register new Vehicle
+   *    description: Register new Vehicle
    *    requestBody:
    *       required: true
    *       content:
@@ -580,6 +580,43 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+/**
+ * @swagger
+ * /api/vehicles/upload:
+ *  put:
+ *    tags:
+ *      - Vehicles
+ *    summary: Hotelier can upload excel files to register new vehicle
+ *    description: Hotelier can upload excel files to register new vehicle
+ *    consumes:
+ *      - multipart/form-data
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        multipart/form-data:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              excel:
+ *                type: file
+ *                format: form-data
+ *                description: Excel file to upload
+ *    responses:
+ *      201:
+ *        description: Successfully loaded excel file! Total Vehicles
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                description:
+ *                  type: string
+ *                  example: Successfully loaded excel file! Total Vehicles
+ *
+ *      500:
+ *        description: Something went wrong with the Excel file. Please check carefully!
+ *
+ */
 vehicleRouter.post('/upload', upload.single('excel'), uploadVehicleFromExcel);
 
 module.exports = vehicleRouter;

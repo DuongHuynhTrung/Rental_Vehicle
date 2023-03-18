@@ -93,7 +93,7 @@ filterRouter.route('/price').get(getVehicleByPrice);
 
 /**
  * @swagger
- * /api/filters/price:
+ * /api/filters/types:
  *  get:
  *    tags:
  *      - Filters
