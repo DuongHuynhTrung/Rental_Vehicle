@@ -31,10 +31,6 @@ const bookingDetailSchema = mongoose.Schema(
       type: Number,
       required: true,
     },
-    payment: {
-      type: Boolean,
-      default: false,
-    },
   },
   {
     timestamp: true,

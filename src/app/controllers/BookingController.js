@@ -72,7 +72,8 @@ const createBooking = asyncHandler(async (req, res, next) => {
     res.status(403);
     throw new Error('Only customers can be created for booking');
   }
-  const { licensePlate, bookingStart, bookingEnd, hasDriver } = req.body;
+  const { licensePlate, bookingStart, bookingEnd, hasDriver, isPaid } =
+    req.body;
   if (!licensePlate || !bookingStart || !bookingEnd || hasDriver == null) {
     res.status(400);
     throw new Error('All field not be empty!');
@@ -95,41 +96,81 @@ const createBooking = asyncHandler(async (req, res, next) => {
   };
   const totalDayBooking = get_day_of_rent(start, end);
   const totalPrice = totalDayBooking * vehicleAvailable.price;
-  const booking = await Booking.create({
-    user_id: req.user.id,
-    licensePlate,
-    bookingStart: start,
-    bookingEnd: end,
-    totalPrice: totalPrice,
-    hasDriver,
-  });
-  if (booking) {
-    changeStatusVehicle(vehicleAvailable);
-    const user = await User.findById(vehicleAvailable.user_id);
-    if (user.profit === undefined) {
-      user.profit = 0;
-    }
-    const profitUser = user.profit + totalPrice * 0.95;
-    const updateProfitUser = await User.findByIdAndUpdate(
-      vehicleAvailable.user_id,
-      {
-        profit: profitUser,
-      }
-    );
-    const admin = await User.findOne({ email: 'admin@gmail.com' });
-    const profitAdmin = admin.profit + totalPrice * 0.05;
-    const updateProfitAdmin = await User.findByIdAndUpdate(admin._id, {
-      profit: profitAdmin,
+  if (isPaid) {
+    const booking = await Booking.create({
+      user_id: req.user.id,
+      licensePlate,
+      bookingStart: start,
+      bookingEnd: end,
+      totalPrice: totalPrice,
+      hasDriver,
+      isPaid,
     });
-    if (updateProfitUser && updateProfitAdmin) {
-      res.status(201).json(booking);
+    if (booking) {
+      changeStatusVehicle(vehicleAvailable);
+      const user = await User.findById(vehicleAvailable.user_id);
+      if (user.profit === undefined) {
+        user.profit = 0;
+      }
+      const profitUser = user.profit + totalPrice * 0.95;
+      const updateProfitUser = await User.findByIdAndUpdate(
+        vehicleAvailable.user_id,
+        {
+          profit: profitUser,
+        }
+      );
+      const admin = await User.findOne({ email: 'admin@gmail.com' });
+      const profitAdmin = admin.profit + totalPrice * 0.05;
+      const updateProfitAdmin = await User.findByIdAndUpdate(admin._id, {
+        profit: profitAdmin,
+      });
+      if (updateProfitUser && updateProfitAdmin) {
+        res.status(201).json(booking);
+      } else {
+        res.status(400);
+        throw new Error('Something went wrong when updating user profit');
+      }
     } else {
-      res.status(400);
-      throw new Error('Something went wrong when updating user profit');
+      res.status(500);
+      throw new Error('Vehicle data is not Valid');
     }
   } else {
-    res.status(500);
-    throw new Error('Vehicle data is not Valid');
+    const booking = await Booking.create({
+      user_id: req.user.id,
+      licensePlate,
+      bookingStart: start,
+      bookingEnd: end,
+      totalPrice: totalPrice,
+      hasDriver,
+    });
+    if (booking) {
+      changeStatusVehicle(vehicleAvailable);
+      const user = await User.findById(vehicleAvailable.user_id);
+      if (user.profit === undefined) {
+        user.profit = 0;
+      }
+      const profitUser = user.profit + totalPrice * 0.95;
+      const updateProfitUser = await User.findByIdAndUpdate(
+        vehicleAvailable.user_id,
+        {
+          profit: profitUser,
+        }
+      );
+      const admin = await User.findOne({ email: 'admin@gmail.com' });
+      const profitAdmin = admin.profit + totalPrice * 0.05;
+      const updateProfitAdmin = await User.findByIdAndUpdate(admin._id, {
+        profit: profitAdmin,
+      });
+      if (updateProfitUser && updateProfitAdmin) {
+        res.status(201).json(booking);
+      } else {
+        res.status(400);
+        throw new Error('Something went wrong when updating user profit');
+      }
+    } else {
+      res.status(500);
+      throw new Error('Vehicle data is not Valid');
+    }
   }
 });
 

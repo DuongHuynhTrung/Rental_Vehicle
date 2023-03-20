@@ -26,6 +26,7 @@ const createBookingDetails = asyncHandler(async (req, res, next) => {
     res.status(400);
     throw new Error("This booking has already have booking's Details!");
   }
+  const totalPrice = booking.totalPrice;
   const bookingDetail = await BookingDetails.create({
     booking_id: bookingId,
     custName,
@@ -33,6 +34,7 @@ const createBookingDetails = asyncHandler(async (req, res, next) => {
     custPhone,
     custAddress,
     licensePlate,
+    totalPrice,
   });
   if (bookingDetail) {
     res.status(201).json(bookingDetail);
