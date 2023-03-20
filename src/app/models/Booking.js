@@ -27,6 +27,9 @@ const bookingSchema = mongoose.Schema(
       type: Number,
       required: true,
     },
+    cancelNote: {
+      type: String,
+    },
     hasDriver: {
       type: Boolean,
       default: false,

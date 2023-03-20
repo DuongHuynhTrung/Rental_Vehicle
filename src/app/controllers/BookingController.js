@@ -164,7 +164,7 @@ const cancelBooking = asyncHandler(async (req, res, next) => {
     throw new Error('Booking Not Found!');
   }
   const userId = booking.user_id.toString();
-  if (req.user.id !== userId && req.user.roleName !== 'Admin') {
+  if (req.user.id !== userId) {
     res.status(403);
     throw new Error(
       "You don't have permission to cancel other customer booking's!"

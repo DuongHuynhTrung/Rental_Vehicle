@@ -31,6 +31,7 @@ const login = asyncHandler(async (req, res, next) => {
     const accessToken = jwt.sign(
       {
         user: {
+          firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
           roleName: role.roleName,
@@ -45,6 +46,7 @@ const login = asyncHandler(async (req, res, next) => {
     const refreshToken = jwt.sign(
       {
         user: {
+          firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
           roleName: role.roleName,
@@ -90,6 +92,7 @@ const loginOauth = asyncHandler(async (req, res, next) => {
     const accessToken = jwt.sign(
       {
         user: {
+          firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
           roleName: role.roleName,
@@ -104,6 +107,7 @@ const loginOauth = asyncHandler(async (req, res, next) => {
     const refreshToken = jwt.sign(
       {
         user: {
+          firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
           roleName: role.roleName,
@@ -163,6 +167,7 @@ const refresh = (req, res) => {
       const accessToken = jwt.sign(
         {
           user: {
+            firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
             roleName: role.roleName,
@@ -228,6 +233,7 @@ passport.use(
           const accessToken = jwt.sign(
             {
               user: {
+                firstName: user.firstName,
                 lastName: user.lastName,
                 email: user.email,
                 roleName: role.roleName,
@@ -242,6 +248,7 @@ passport.use(
           const refreshToken = jwt.sign(
             {
               user: {
+                firstName: user.firstName,
                 lastName: user.lastName,
                 email: user.email,
                 roleName: role.roleName,
@@ -277,6 +284,7 @@ passport.use(
           const accessToken = jwt.sign(
             {
               user: {
+                firstName: user.firstName,
                 lastName: user.lastName,
                 email: user.email,
                 roleName: role.roleName,
@@ -291,6 +299,7 @@ passport.use(
           const refreshToken = jwt.sign(
             {
               user: {
+                firstName: user.firstName,
                 lastName: user.lastName,
                 email: user.email,
                 roleName: role.roleName,

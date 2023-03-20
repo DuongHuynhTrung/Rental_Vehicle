@@ -146,7 +146,7 @@ const searchUserByName = asyncHandler(async (req, res, next) => {
 //@route GET /api/users/:id
 //@access private
 const getUserById = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.params.id);
+  const user = await User.findById(req.params.id).populate('role_id').exec();
   if (!user) {
     res.status(404);
     throw new Error('User Not Found!');
