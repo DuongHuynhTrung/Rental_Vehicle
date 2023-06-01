@@ -1,13 +1,14 @@
-const express = require('express');
+const express = require("express");
 const authRouter = express.Router();
-const loginLimiter = require('../app/middleware/loginLimiter');
-const passport = require('passport');
+const loginLimiter = require("../app/middleware/loginLimiter");
+const passport = require("passport");
 const {
   login,
+  loginGoogle,
   refresh,
   logout,
   loginOauth,
-} = require('../app/controllers/AuthController');
+} = require("../app/controllers/AuthController");
 
 /**
  * @swagger
@@ -42,7 +43,9 @@ const {
  *
  */
 
-authRouter.route('/login').post(loginLimiter, login);
+authRouter.route("/login").post(loginLimiter, login);
+
+authRouter.route("/loginGoogle").post(loginLimiter, loginGoogle);
 
 /**
  * @swagger
@@ -62,7 +65,7 @@ authRouter.route('/login').post(loginLimiter, login);
  *
  */
 
-authRouter.route('/refresh').get(refresh);
+authRouter.route("/refresh").get(refresh);
 
 /**
  * @swagger
@@ -80,17 +83,17 @@ authRouter.route('/refresh').get(refresh);
  *
  */
 
-authRouter.route('/logout').post(logout);
+authRouter.route("/logout").post(logout);
 
 /* FACEBOOK ROUTER */
 authRouter.get(
-  '/login/facebook',
-  passport.authenticate('facebook', { scope: ['profile', 'email'] })
+  "/login/facebook",
+  passport.authenticate("facebook", { scope: ["profile", "email"] })
 );
 
 authRouter.get(
-  '/facebook/callback',
-  passport.authenticate('facebook', { failureRedirect: '/login' }),
+  "/facebook/callback",
+  passport.authenticate("facebook", { failureRedirect: "/login" }),
   function (req, res) {
     res.send(req.user);
   }
@@ -115,18 +118,18 @@ authRouter.get(
  */
 
 authRouter.get(
-  '/login/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
+  "/login/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-authRouter.get('/login/authOauth', loginOauth);
+authRouter.get("/login/authOauth", loginOauth);
 
 authRouter.get(
-  '/google/callback',
-  passport.authenticate('google', {
-    failureRedirect: '/login',
+  "/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/login",
     failureMessage: true,
-    successRedirect: 'http://localhost:3000/home',
+    successRedirect: "http://localhost:3000/home",
   })
   // loginOauth
   // function (req, res) {

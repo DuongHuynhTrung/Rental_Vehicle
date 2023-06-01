@@ -1,5 +1,5 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require("express");
+const bodyParser = require("body-parser");
 const userRouter = express.Router();
 userRouter.use(bodyParser.json());
 const {
@@ -17,15 +17,18 @@ const {
   updateAvatarUser,
   forgotPassword,
   resetPassword,
-} = require('../app/controllers/UserController');
+  forgotPasswordSMS,
+  sendOTPWhenRegister,
+  verifyOTPWhenRegister,
+} = require("../app/controllers/UserController");
 const {
   getDrivingLicenseOfUser,
   registerDrivingLicense,
   updateDrivingLicense,
   deleteDrivingLicense,
-} = require('../app/controllers/DrivingLicenseController');
-const validateToken = require('../app/middleware/validateTokenHandler');
-const multer = require('multer');
+} = require("../app/controllers/DrivingLicenseController");
+const validateToken = require("../app/middleware/validateTokenHandler");
+const multer = require("multer");
 
 /**
  *  @swagger
@@ -139,7 +142,46 @@ const multer = require('multer');
  *
  */
 
-userRouter.route('/register').post(registerUser);
+userRouter.route("/register").post(registerUser);
+
+/**
+ * @swagger
+ * /api/users/otpRegister:
+ *  post:
+ *    tags:
+ *      - Users
+ *    summary: Send OTP When Register with Mail
+ *    description: Send OTP When Register with Mail
+ *    requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                  type: string
+ *                  description: Enter email to send OTP
+ *                  example: duonghtse150080@fpt.edu.vn
+ *    responses:
+ *      200:
+ *        description:  OTP sent successfully
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                description:
+ *                  type: string
+ *                  example: Register Successfully!
+ *      400:
+ *        description: All field not be empty! OR User has already registered with Email! OR User has already registered with Phone Number! OR User data is not Valid!
+ *
+ */
+
+userRouter.route("/otpRegister").post(sendOTPWhenRegister);
+
+userRouter.route("/verifyOtpRegister").post(verifyOTPWhenRegister);
 
 /**
  * @swagger
@@ -176,7 +218,7 @@ userRouter.route('/register').post(registerUser);
  *        description: User not Found
  *
  */
-userRouter.post('/forgotPassword', forgotPassword);
+userRouter.post("/forgotPassword", forgotPassword);
 
 /**
  * @swagger
@@ -217,16 +259,16 @@ userRouter.post('/forgotPassword', forgotPassword);
  *        description: User not Found
  *
  */
-userRouter.post('/resetPassword', resetPassword);
+userRouter.post("/resetPassword", resetPassword);
 
 userRouter.use(validateToken);
 
 //Router for Admin to getAllUsers
 userRouter
-  .route('/')
+  .route("/")
   .all((req, res, next) => {
     res.statusCode = 200;
-    res.setHeader('Content-Type', 'json/plain');
+    res.setHeader("Content-Type", "json/plain");
     next();
   })
 
@@ -295,7 +337,7 @@ userRouter
  *        description: Something went wrong when pass query to searchUserByName
  *
  */
-userRouter.get('/search', searchUserByName);
+userRouter.get("/search", searchUserByName);
 
 /**
  * @swagger
@@ -324,7 +366,7 @@ userRouter.get('/search', searchUserByName);
  *        description: User not found!
  *
  */
-userRouter.get('/current', currentUser);
+userRouter.get("/current", currentUser);
 
 /**
  * @swagger
@@ -360,12 +402,12 @@ userRouter.get('/current', currentUser);
  *        description: Something went wrong in blockUsers
  *
  */
-userRouter.get('/blocked/:id', blockUsers);
+userRouter.get("/blocked/:id", blockUsers);
 
 // config multer to update image
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, './src/public/images');
+    cb(null, "./src/public/images");
   },
   filename: function (req, file, callback) {
     callback(null, file.originalname); // this is how the files will be named
@@ -410,7 +452,7 @@ const upload = multer({ storage: storage });
  *        description: Something wrong when wrong in updateProfile
  *
  */
-userRouter.put('/avatar', upload.single('image'), updateAvatarUser);
+userRouter.put("/avatar", upload.single("image"), updateAvatarUser);
 
 /**
  *  @swagger
@@ -438,10 +480,10 @@ userRouter.put('/avatar', upload.single('image'), updateAvatarUser);
 
 //Router for CRUD Driving License
 userRouter
-  .route('/drivingLicense')
+  .route("/drivingLicense")
   .all((req, res, next) => {
     res.statusCode = 200;
-    res.setHeader('Content-Type', 'json/plain');
+    res.setHeader("Content-Type", "json/plain");
     next();
   })
 
@@ -611,10 +653,10 @@ userRouter
 
 //Router for getUserByID, updateUser, deleteUser
 userRouter
-  .route('/:id')
+  .route("/:id")
   .all((req, res, next) => {
     res.statusCode = 200;
-    res.setHeader('Content-Type', 'json/plain');
+    res.setHeader("Content-Type", "json/plain");
     next();
   })
 
@@ -796,7 +838,7 @@ userRouter
  *        description: User Not Found!
  *
  */
-userRouter.route('/upRole/:id').get(updateRoleToHotelier);
+userRouter.route("/upRole/:id").get(updateRoleToHotelier);
 
 /**
  * @swagger
@@ -833,7 +875,7 @@ userRouter.route('/upRole/:id').get(updateRoleToHotelier);
  *        description: User Not Found!
  *
  */
-userRouter.route('/checkOldPassword/:id').post(checkOldPassword);
+userRouter.route("/checkOldPassword/:id").post(checkOldPassword);
 /**
  * @swagger
  * /api/users/changePassword/{id}:
@@ -873,6 +915,8 @@ userRouter.route('/checkOldPassword/:id').post(checkOldPassword);
  *        description: Something when wrong in changePassword
  *
  */
-userRouter.route('/changePassword/:id').put(changePassword);
+userRouter.route("/changePassword/:id").put(changePassword);
+
+userRouter.route("/forgotPassword/SMS").post(forgotPasswordSMS);
 
 module.exports = userRouter;

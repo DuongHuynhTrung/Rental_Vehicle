@@ -1,9 +1,10 @@
-const asyncHandler = require('express-async-handler');
-const User = require('../models/User');
-const Role = require('../models/Role');
-const nodemailer = require('nodemailer');
-const bcrypt = require('bcrypt');
-const moment = require('moment/moment');
+const asyncHandler = require("express-async-handler");
+const User = require("../models/User");
+const Role = require("../models/Role");
+const nodemailer = require("nodemailer");
+const bcrypt = require("bcrypt");
+const twilio = require("twilio");
+const moment = require("moment/moment");
 
 //@desc Register New user
 //@route POST /api/users/register
@@ -32,18 +33,18 @@ const registerUser = asyncHandler(async (req, res, next) => {
     !roleName
   ) {
     res.status(400);
-    throw new Error('All field not be empty!');
+    throw new Error("All field not be empty!");
   }
   const userEmailAvailable = await User.findOne({ email });
   if (userEmailAvailable) {
     res.status(400);
-    throw new Error('User has already registered with Email!');
+    throw new Error("User has already registered with Email!");
   }
 
   const userPhoneAvailable = await User.findOne({ phone });
   if (userPhoneAvailable) {
     res.status(400);
-    throw new Error('User has already registered with Phone Number!');
+    throw new Error("User has already registered with Phone Number!");
   }
 
   //Hash password
@@ -64,7 +65,134 @@ const registerUser = asyncHandler(async (req, res, next) => {
     res.status(201).json(user);
   } else {
     res.status(400);
-    throw new Error('User data is not Valid!');
+    throw new Error("User data is not Valid!");
+  }
+});
+
+//@desc Register New user
+//@route POST /api/users/otpRegister
+//@access public
+const sendOTPWhenRegister = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  try {
+    const userEmailAvailable = await User.findOne({ email });
+    if (userEmailAvailable) {
+      res.status(400);
+      throw new Error("User has already been registered");
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    const otpExpires = new Date();
+
+    req.session.otp = otp;
+    req.session.otpExpires = otpExpires;
+
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true, // use SSL
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.PASSWORD,
+      },
+    });
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: email,
+      subject: "Verify OTP when registering",
+      // text: `Your OTP to reset your password is: ${otp}`,
+      html: "<h1>This is a html email</h1><p style={color: 'red'}>It supports <strong>html</strong> content.</p>",
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        res.status(500).send(error.message);
+      } else {
+        res.status(200).json({ otp, otpExpires });
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(res.statusCode).send(error.message);
+  }
+});
+
+//@desc Register New user
+//@route POST /api/users/verifyOtpRegister
+//@access public
+const verifyOTPWhenRegister = asyncHandler(async (req, res, next) => {
+  const { otp, otpExpired, otpStored } = req.body;
+  try {
+    if (otpStored !== otp) {
+      res.status(400);
+      throw new Error("Wrong OTP! Please try again");
+    }
+    const currentTime = moment(new Date());
+    const otpExpires = moment(otpExpired);
+    const isExpired = currentTime.diff(otpExpires, "minutes");
+    if (isExpired > 10) {
+      res.status(400);
+      throw new Error("OTP is expired! Please try again");
+    }
+
+    //Create new user
+    const {
+      firstName,
+      lastName,
+      gender,
+      dob,
+      address,
+      phone,
+      email,
+      password,
+      roleName,
+    } = req.body;
+    if (
+      !firstName ||
+      !lastName ||
+      !gender ||
+      !dob ||
+      !address ||
+      !phone ||
+      !email ||
+      !password ||
+      !roleName
+    ) {
+      res.status(400);
+      throw new Error("All field not be empty!");
+    }
+    const userEmailAvailable = await User.findOne({ email });
+    if (userEmailAvailable) {
+      res.status(400).send("User has already registered with Email!");
+    }
+
+    const userPhoneAvailable = await User.findOne({ phone });
+    if (userPhoneAvailable) {
+      res.status(400).send("User has already registered with Phone Number!");
+    }
+
+    //Hash password
+    const role = await Role.findOne({ roleName });
+    const user = await User.create({
+      firstName,
+      lastName,
+      gender,
+      dob,
+      address,
+      phone,
+      email,
+      password: hashedPassword,
+      role_id: role._id.toString(),
+    });
+    if (!user) {
+      res.status(500).send("Something went wrong registering the user");
+    }
+
+    res.status(200).send("Successfully registered");
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error.message);
   }
 });
 
@@ -73,11 +201,11 @@ const registerUser = asyncHandler(async (req, res, next) => {
 //@access private
 const getUsers = asyncHandler(async (req, res, next) => {
   const role = await Role.findById(req.user.role_id);
-  if (role.roleName !== 'Admin') {
+  if (role.roleName !== "Admin") {
     res.status(403);
-    throw new Error('Only Admin have permission to see all User');
+    throw new Error("Only Admin have permission to see all User");
   }
-  const users = await User.find().populate('role_id').exec();
+  const users = await User.find().populate("role_id").exec();
   if (users.length === 0) {
     res.status(404);
     throw new Error("Website don't have any member!");
@@ -92,7 +220,7 @@ const currentUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id);
   if (!user) {
     res.status(404);
-    throw new Error('User not found!');
+    throw new Error("User not found!");
   }
   res.status(200).json(user);
 });
@@ -105,20 +233,20 @@ const blockUsers = asyncHandler(async (req, res) => {
   const user = await User.findById(user_id);
   if (!user) {
     res.status(404);
-    throw new Error('User not found!');
+    throw new Error("User not found!");
   }
-  if (req.user.roleName !== 'Admin') {
+  if (req.user.roleName !== "Admin") {
     res.status(403);
-    throw new Error('Only admins can block users!');
+    throw new Error("Only admins can block users!");
   }
   const blockUsers = await User.findByIdAndUpdate(user_id, {
     status: false,
   });
   if (!blockUsers) {
     res.status(500);
-    throw new Error('Something went wrong in blockUsers');
+    throw new Error("Something went wrong in blockUsers");
   }
-  res.status(200).json({ message: 'Blocked successfully' });
+  res.status(200).json({ message: "Blocked successfully" });
 });
 
 //@desc Current User Info
@@ -128,9 +256,9 @@ const searchUserByName = asyncHandler(async (req, res, next) => {
   const lastName = req.query.lastName;
   if (!lastName || lastName === undefined) {
     res.status(500);
-    throw new Error('Something went wrong when pass query to searchUserByName');
+    throw new Error("Something went wrong when pass query to searchUserByName");
   }
-  User.find({ lastName: { $regex: lastName, $options: 'i' } }, (err, users) => {
+  User.find({ lastName: { $regex: lastName, $options: "i" } }, (err, users) => {
     if (err) {
       // Handle error
       res.status(500);
@@ -146,13 +274,13 @@ const searchUserByName = asyncHandler(async (req, res, next) => {
 //@route GET /api/users/:id
 //@access private
 const getUserById = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.params.id).populate('role_id').exec();
+  const user = await User.findById(req.params.id).populate("role_id").exec();
   if (!user) {
     res.status(404);
-    throw new Error('User Not Found!');
+    throw new Error("User Not Found!");
   }
   const userEmail = user.email;
-  if (!(req.user.email === userEmail || req.user.roleName === 'Admin')) {
+  if (!(req.user.email === userEmail || req.user.roleName === "Admin")) {
     res.status(403);
     throw new Error("You don't have permission to get user's profile");
   }
@@ -166,12 +294,12 @@ const updateUsers = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.params.id);
   if (!user) {
     res.status(404);
-    throw new Error('User Not Found!');
+    throw new Error("User Not Found!");
   }
   const { firstName, lastName, gender, dob, address, phone } = req.body;
   if (!firstName || !lastName || !gender || !dob || !address || !phone) {
     res.status(400);
-    throw new Error('All field not be empty!');
+    throw new Error("All field not be empty!");
   }
   if (req.user.email !== user.email) {
     res.status(403);
@@ -182,7 +310,7 @@ const updateUsers = asyncHandler(async (req, res, next) => {
     const userAvailable = await User.findOne({ phone });
     if (userAvailable) {
       res.status(400);
-      throw new Error('This Phone has already Exist!');
+      throw new Error("This Phone has already Exist!");
     }
   }
   const updateUser = await User.findByIdAndUpdate(req.params.id, req.body, {
@@ -198,9 +326,9 @@ const deleteUsers = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.params.id);
   if (!user) {
     res.status(404);
-    throw new Error('User Not Found!');
+    throw new Error("User Not Found!");
   }
-  if (req.user.roleName !== 'Admin') {
+  if (req.user.roleName !== "Admin") {
     res.status(403);
     throw new Error("You don't have permission to update user's profile");
   }
@@ -216,22 +344,22 @@ const updateRoleToHotelier = asyncHandler(async (req, res, next) => {
   const user = await User.findById(user_id);
   if (!user) {
     res.status(404);
-    throw new Error('User not Found!');
+    throw new Error("User not Found!");
   }
-  if (req.user.roleName !== 'Admin') {
+  if (req.user.roleName !== "Admin") {
     res.status(403);
-    throw new Error('Only Admin can update role of User to Hotelier');
+    throw new Error("Only Admin can update role of User to Hotelier");
   }
   const updateRole = await User.findByIdAndUpdate(
     user_id,
     {
-      role_id: '63e4736f62bf96d8df480f5a',
+      role_id: "63e4736f62bf96d8df480f5a",
     },
     { new: true }
   );
   if (!updateRole) {
     res.status(500);
-    throw new Error('Something when wrong in update Role User to Hotelier!');
+    throw new Error("Something when wrong in update Role User to Hotelier!");
   }
   res.status(200).json(updateRole);
 });
@@ -245,12 +373,12 @@ const checkOldPassword = asyncHandler(async (req, res) => {
   const user = await User.findById(id);
   if (!user) {
     res.status(404);
-    throw new Error('User not found');
+    throw new Error("User not found");
   }
   const isCorrectPassword = await bcrypt.compare(password, user.password);
   if (!isCorrectPassword) {
     res.status(401);
-    throw new Error('Old password is incorrect');
+    throw new Error("Old password is incorrect");
   }
   res.status(200).json(user);
 });
@@ -263,7 +391,7 @@ const changePassword = asyncHandler(async (req, res, next) => {
   const user = await User.findById(user_id);
   if (!user) {
     res.status(404);
-    throw new Error('User not Found!');
+    throw new Error("User not Found!");
   }
   if (req.user.id !== user_id) {
     res.status(403);
@@ -272,18 +400,18 @@ const changePassword = asyncHandler(async (req, res, next) => {
   const { password, confirmPassword } = req.body;
   if (!password || !confirmPassword) {
     res.status(400);
-    throw new Error('All field not be empty!');
+    throw new Error("All field not be empty!");
   }
   if (password !== confirmPassword) {
     res.status(400);
-    throw new Error('Password and confirm password are different!');
+    throw new Error("Password and confirm password are different!");
   }
   //Hash password
   const hashedPassword = await bcrypt.hash(password, 10);
   if (!hashedPassword) {
     res.status(500);
     throw new Error(
-      'Something when wrong in hashPassword of changePassword function!'
+      "Something when wrong in hashPassword of changePassword function!"
     );
   }
   const updatePassword = await User.findByIdAndUpdate(
@@ -295,7 +423,7 @@ const changePassword = asyncHandler(async (req, res, next) => {
   );
   if (!updatePassword) {
     res.status(500);
-    throw new Error('Something when wrong in changePassword');
+    throw new Error("Something when wrong in changePassword");
   }
   res.status(200).json(updatePassword);
 });
@@ -317,7 +445,7 @@ const updateAvatarUser = asyncHandler(async (req, res) => {
   );
   if (!updateProfile) {
     res.status(500);
-    throw new Error('Something wrong when wrong in updateProfile');
+    throw new Error("Something wrong when wrong in updateProfile");
   }
   res.status(200).json(updateProfile);
 });
@@ -329,7 +457,7 @@ const forgotPassword = async (req, res) => {
 
     if (!user) {
       res.status(404);
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000);
@@ -339,10 +467,10 @@ const forgotPassword = async (req, res) => {
     await user.save();
 
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
+      host: "smtp.gmail.com",
       port: 465,
       secure: true, // use SSL
-      service: 'gmail',
+      service: "gmail",
       auth: {
         user: process.env.EMAIL,
         pass: process.env.PASSWORD,
@@ -351,7 +479,7 @@ const forgotPassword = async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL,
       to: email,
-      subject: 'Reset Password OTP',
+      subject: "Reset Password OTP",
       text: `Your OTP to reset your password is ${otp}`,
     };
 
@@ -363,13 +491,43 @@ const forgotPassword = async (req, res) => {
       }
     });
 
-    res.status(200).json('OTP sent to email');
+    res.status(200).json("OTP sent to email");
   } catch (error) {
     console.log(error);
     res.status(500);
     throw new Error(
-      'Something went wrong when sending email to reset password'
+      "Something went wrong when sending email to reset password"
     );
+  }
+};
+
+const forgotPasswordSMS = async (req, res) => {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+
+  const { phone } = req.body;
+  const user = await User.findOne({ phone });
+  if (!user) {
+    return res.status(400).send("User not found");
+  }
+  const otp = Math.floor(100000 + Math.random() * 900000);
+
+  user.otp = otp;
+  user.otpExpires = new Date();
+  await user.save();
+
+  try {
+    const client = twilio(accountSid, authToken);
+    await client.messages.create({
+      to: `+84${user.phone}`,
+      from: twilioPhoneNumber,
+      body: `Your OTP for resetting your password is: ${otp}`,
+    });
+    res.status(200).send({ userId: user.id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to send OTP");
   }
 };
 
@@ -379,18 +537,18 @@ const resetPassword = asyncHandler(async (req, res, next) => {
     const user = await User.findOne({ email });
     if (!user) {
       res.status(404);
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
     if (user.otp.toString() !== otp) {
       res.status(400);
-      throw new Error('Wrong OTP! Please try again');
+      throw new Error("Wrong OTP! Please try again");
     }
     const currentTime = moment(new Date());
     const otpExpires = moment(user.otpExpires);
-    const isExpired = currentTime.diff(otpExpires, 'minutes');
+    const isExpired = currentTime.diff(otpExpires, "minutes");
     if (isExpired > 10) {
       res.status(400);
-      throw new Error('OTP is expired! Please try again');
+      throw new Error("OTP is expired! Please try again");
     }
     const newPassword = Math.floor(100000 + Math.random() * 900000);
     const hashedPassword = await bcrypt.hash(newPassword.toString(), 10);
@@ -404,14 +562,14 @@ const resetPassword = asyncHandler(async (req, res, next) => {
     if (!updateUser) {
       res.status(500);
       throw new Error(
-        'Something went wrong when updating new password in reset password!'
+        "Something went wrong when updating new password in reset password!"
       );
     }
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
+      host: "smtp.gmail.com",
       port: 465,
       secure: true, // use SSL
-      service: 'gmail',
+      service: "gmail",
       auth: {
         user: process.env.EMAIL,
         pass: process.env.PASSWORD,
@@ -420,7 +578,7 @@ const resetPassword = asyncHandler(async (req, res, next) => {
     const mailOptions = {
       from: process.env.EMAIL,
       to: email,
-      subject: 'Reset Password Successfully',
+      subject: "Reset Password Successfully",
       text: `This is your new password: ${newPassword}. Please login to continue!`,
     };
 
@@ -432,7 +590,7 @@ const resetPassword = asyncHandler(async (req, res, next) => {
       }
     });
 
-    res.status(200).json('Reset password successfully');
+    res.status(200).json("Reset password successfully");
   } catch (error) {
     console.log(error);
     throw new Error(error);
@@ -454,4 +612,7 @@ module.exports = {
   updateAvatarUser,
   forgotPassword,
   resetPassword,
+  forgotPasswordSMS,
+  sendOTPWhenRegister,
+  verifyOTPWhenRegister,
 };
