@@ -1,8 +1,7 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require("express");
+const bodyParser = require("body-parser");
 const bookingRouter = express.Router();
 
-const validateToken = require('../app/middleware/validateTokenHandler');
 const {
   createBooking,
   getBookingById,
@@ -12,13 +11,14 @@ const {
   deleteBookingsForAdmin,
   returnVehicleAfterBooking,
   getAllBookingsOfHotelier,
-} = require('../app/controllers/BookingController');
+} = require("../app/controllers/BookingController");
 const {
   createBookingDetails,
   getBookingDetailsByBookingID,
   getBookingDetailsForConfirm,
   deleteBookingDetailsByBookingID,
-} = require('../app/controllers/BookingDetailsController');
+} = require("../app/controllers/BookingDetailsController");
+const { validateToken } = require("../app/middleware/validateTokenHandler");
 
 bookingRouter.use(bodyParser.json());
 
@@ -53,10 +53,10 @@ bookingRouter.use(bodyParser.json());
 bookingRouter.use(validateToken);
 
 bookingRouter
-  .route('/')
+  .route("/")
   .all((req, res, next) => {
     res.statusCode = 200;
-    res.setHeader('Content-Type', 'json/plain');
+    res.setHeader("Content-Type", "json/plain");
     next();
   })
 
@@ -172,7 +172,7 @@ bookingRouter
  *        description: Hotelier don't have any Booking!
  *
  */
-bookingRouter.route('/hotelier').get(getAllBookingsOfHotelier);
+bookingRouter.route("/hotelier").get(getAllBookingsOfHotelier);
 
 /**
  * @swagger
@@ -204,13 +204,13 @@ bookingRouter.route('/hotelier').get(getAllBookingsOfHotelier);
  *
  */
 
-bookingRouter.route('/admin').get(getAllBookings);
+bookingRouter.route("/admin").get(getAllBookings);
 
 bookingRouter
-  .route('/:bookingId')
+  .route("/:bookingId")
   .all((req, res, next) => {
     res.statusCode = 200;
-    res.setHeader('Content-Type', 'json/plain');
+    res.setHeader("Content-Type", "json/plain");
     next();
   })
 
@@ -326,7 +326,7 @@ bookingRouter
  *        description: Something went wrong of change status in cancelling booking! OR Something went wrong in cancelling booking!
  *
  */
-bookingRouter.route('/:bookingId/cancel').get(cancelBooking);
+bookingRouter.route("/:bookingId/cancel").get(cancelBooking);
 
 /**
  * @swagger
@@ -367,7 +367,7 @@ bookingRouter.route('/:bookingId/cancel').get(cancelBooking);
  *        description: Something went wrong with change status vehicle in return vehicle after booking
  *
  */
-bookingRouter.route('/:bookingId/return').get(returnVehicleAfterBooking);
+bookingRouter.route("/:bookingId/return").get(returnVehicleAfterBooking);
 
 /**
  *  @swagger
@@ -410,10 +410,10 @@ bookingRouter.route('/:bookingId/return').get(returnVehicleAfterBooking);
  */
 
 bookingRouter
-  .route('/bookingDetails/:bookingId')
+  .route("/bookingDetails/:bookingId")
   .all((req, res, next) => {
     res.statusCode = 200;
-    res.setHeader('Content-Type', 'json/plain');
+    res.setHeader("Content-Type", "json/plain");
     next();
   })
 
@@ -589,7 +589,7 @@ bookingRouter
  *
  */
 bookingRouter
-  .route('/bookingDetails/:bookingId/confirm')
+  .route("/bookingDetails/:bookingId/confirm")
   .get(getBookingDetailsForConfirm);
 
 module.exports = bookingRouter;

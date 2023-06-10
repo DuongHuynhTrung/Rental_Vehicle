@@ -1,12 +1,12 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require("express");
+const bodyParser = require("body-parser");
 const filterRouter = express.Router();
 filterRouter.use(bodyParser.json());
 const {
   getVehicleByVehicleManufacturer,
   getVehicleByPrice,
   getVehicleByTypes,
-} = require('../app/controllers/FilterController');
+} = require("../app/controllers/FilterController");
 
 /**
  * @swagger
@@ -43,7 +43,7 @@ const {
  *        description: Don't have any vehicle with that manufacturer
  *
  */
-filterRouter.route('/manufacturer').get(getVehicleByVehicleManufacturer);
+filterRouter.route("/manufacturer").get(getVehicleByVehicleManufacturer);
 
 /**
  * @swagger
@@ -89,7 +89,7 @@ filterRouter.route('/manufacturer').get(getVehicleByVehicleManufacturer);
  *        description: Error in filter vehicle by price
  *
  */
-filterRouter.route('/price').get(getVehicleByPrice);
+filterRouter.route("/price").get(getVehicleByPrice);
 
 /**
  * @swagger
@@ -128,6 +128,6 @@ filterRouter.route('/price').get(getVehicleByPrice);
  *        description: Error in filtering vehicle by type
  *
  */
-filterRouter.route('/types').get(getVehicleByTypes);
+filterRouter.route("/types").get(getVehicleByTypes);
 
 module.exports = filterRouter;

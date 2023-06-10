@@ -1,55 +1,81 @@
-const asyncHandler = require('express-async-handler');
-const Booking = require('../models/Booking');
-const User = require('../models/User');
-const Vehicle = require('../models/Vehicle');
+const asyncHandler = require("express-async-handler");
+const Booking = require("../models/Booking");
+const User = require("../models/User");
+const Vehicle = require("../models/Vehicle");
+const Voucher = require("../models/Voucher");
 
 //@desc Get all Booking Of User
 //@route GET /api/bookings/hotelier
 //@access private
 const getAllBookingsOfHotelier = asyncHandler(async (req, res, next) => {
-  const vehicle = await Vehicle.find({ user_id: req.user.id });
-  const allBookings = await Booking.find();
-  let bookings = [];
-  vehicle.forEach((vehicle) => {
-    allBookings.forEach((booking) =>
-      booking.licensePlate === vehicle.licensePlate
-        ? bookings.push(booking)
-        : null
-    );
-  });
-  if (bookings.length === 0) {
-    res.status(404);
-    throw new Error("Hotelier don't have any Booking!");
+  try {
+    const vehicle = await Vehicle.find({ user_id: req.user.id });
+    const allBookings = await Booking.find()
+      .populate("user_id")
+      .populate("vehicle_id")
+      .populate("user_canceled")
+      .populate("voucher_id")
+      .exec();
+    let bookings = [];
+    vehicle.forEach((vehicle) => {
+      allBookings.forEach((booking) =>
+        booking.vehicle_id._id === vehicle._id ? bookings.push(booking) : null
+      );
+    });
+    if (bookings.length === 0) {
+      res.status(404);
+      throw new Error("Hotelier don't have any Booking!");
+    }
+    res.status(200).json(bookings);
+  } catch (error) {
+    res.status(res.statusCode || 500).send(error.message);
   }
-  res.status(200).json(bookings);
 });
 
 //@desc Get all Booking Of User
 //@route GET /api/bookings
 //@access private
 const getAllBookingsOfUser = asyncHandler(async (req, res, next) => {
-  const bookings = await Booking.find({ user_id: req.user.id });
-  if (bookings.length === 0) {
-    res.status(404);
-    throw new Error("Customer don't have any Booking!");
+  try {
+    const bookings = await Booking.find({ user_id: req.user.id })
+      .populate("user_id")
+      .populate("vehicle_id")
+      .populate("user_canceled")
+      .populate("voucher_id")
+      .exec();
+    if (bookings.length === 0) {
+      res.status(404);
+      throw new Error("Customer don't have any Booking!");
+    }
+    res.status(200).json(bookings);
+  } catch (error) {
+    res.status(res.statusCode || 500).send(error.message);
   }
-  res.status(200).json(bookings);
 });
 
 //@desc Get all Booking Of User
 //@route GET /api/booking/:userId
 //@access private
 const getAllBookings = asyncHandler(async (req, res, next) => {
-  if (req.user.roleName !== 'Admin') {
-    res.status(403);
-    throw new Error('Only admin can get all Bookings!');
+  try {
+    if (req.user.roleName !== "Admin") {
+      res.status(403);
+      throw new Error("Only admin can get all Bookings!");
+    }
+    const bookings = await Booking.find()
+      .populate("user_id")
+      .populate("vehicle_id")
+      .populate("user_canceled")
+      .populate("voucher_id")
+      .exec();
+    if (bookings.length === 0) {
+      res.status(404);
+      throw new Error("System don't have any bookings!");
+    }
+    res.status(200).json(bookings);
+  } catch (error) {
+    res.status(res.statusCode || 500).send(error.message);
   }
-  const bookings = await Booking.find().populate('user_id').exec();
-  if (bookings.length === 0) {
-    res.status(404);
-    throw new Error("System don't have any bookings!");
-  }
-  res.status(200).json(bookings);
 });
 
 const changeStatusVehicle = asyncHandler(async (vehicle) => {
@@ -57,10 +83,7 @@ const changeStatusVehicle = asyncHandler(async (vehicle) => {
     { _id: vehicle._id },
     { isRented: !vehicle.isRented }
   );
-  if (updatedVehicle) {
-    return true;
-  }
-  return false;
+  return !!updatedVehicle;
 });
 
 //@desc Register New Vehicle
@@ -68,24 +91,28 @@ const changeStatusVehicle = asyncHandler(async (vehicle) => {
 //@access private
 const createBooking = asyncHandler(async (req, res, next) => {
   const roleUser = req.user.roleName;
-  if (roleUser !== 'Customer') {
+  if (roleUser !== "Customer") {
     res.status(403);
-    throw new Error('Only customers can be created for booking');
+    throw new Error("Only customers can be created for booking");
   }
-  const { licensePlate, bookingStart, bookingEnd, hasDriver, isPaid } =
-    req.body;
-  if (!licensePlate || !bookingStart || !bookingEnd || hasDriver == null) {
+  const { licensePlate, bookingStart, bookingEnd, voucherCode } = req.body;
+  if (
+    licensePlate === undefined ||
+    bookingStart === undefined ||
+    bookingEnd === undefined ||
+    voucherCode === undefined
+  ) {
     res.status(400);
-    throw new Error('All field not be empty!');
+    throw new Error("All field not be empty!");
   }
   const vehicleAvailable = await Vehicle.findOne({ licensePlate });
   if (!vehicleAvailable) {
     res.status(404);
-    throw new Error('Vehicle not Found!');
+    throw new Error("Vehicle not Found!");
   }
   if (vehicleAvailable.isRented) {
     res.status(500);
-    throw new Error('Vehicle has already booked by other Customer!');
+    throw new Error("Vehicle has already booked by other Customer!");
   }
   const start = new Date(bookingStart);
   const end = new Date(bookingEnd);
@@ -103,7 +130,6 @@ const createBooking = asyncHandler(async (req, res, next) => {
       bookingStart: start,
       bookingEnd: end,
       totalPrice: totalPrice,
-      hasDriver,
       isPaid,
     });
     if (booking) {
@@ -119,7 +145,7 @@ const createBooking = asyncHandler(async (req, res, next) => {
           profit: profitUser,
         }
       );
-      const admin = await User.findOne({ email: 'admin@gmail.com' });
+      const admin = await User.findOne({ email: "admin@gmail.com" });
       const profitAdmin = admin.profit + totalPrice * 0.05;
       const updateProfitAdmin = await User.findByIdAndUpdate(admin._id, {
         profit: profitAdmin,
@@ -128,11 +154,11 @@ const createBooking = asyncHandler(async (req, res, next) => {
         res.status(201).json(booking);
       } else {
         res.status(400);
-        throw new Error('Something went wrong when updating user profit');
+        throw new Error("Something went wrong when updating user profit");
       }
     } else {
       res.status(500);
-      throw new Error('Vehicle data is not Valid');
+      throw new Error("Vehicle data is not Valid");
     }
   } else {
     const booking = await Booking.create({
@@ -141,7 +167,6 @@ const createBooking = asyncHandler(async (req, res, next) => {
       bookingStart: start,
       bookingEnd: end,
       totalPrice: totalPrice,
-      hasDriver,
     });
     if (booking) {
       changeStatusVehicle(vehicleAvailable);
@@ -156,7 +181,7 @@ const createBooking = asyncHandler(async (req, res, next) => {
           profit: profitUser,
         }
       );
-      const admin = await User.findOne({ email: 'admin@gmail.com' });
+      const admin = await User.findOne({ email: "admin@gmail.com" });
       const profitAdmin = admin.profit + totalPrice * 0.05;
       const updateProfitAdmin = await User.findByIdAndUpdate(admin._id, {
         profit: profitAdmin,
@@ -165,12 +190,93 @@ const createBooking = asyncHandler(async (req, res, next) => {
         res.status(201).json(booking);
       } else {
         res.status(400);
-        throw new Error('Something went wrong when updating user profit');
+        throw new Error("Something went wrong when updating user profit");
       }
     } else {
       res.status(500);
-      throw new Error('Vehicle data is not Valid');
+      throw new Error("Vehicle data is not Valid");
     }
+  }
+});
+//@desc Register New Vehicle
+//@route POST /api/booking
+//@access private
+const createBookingV2 = asyncHandler(async (req, res, next) => {
+  const roleUser = req.user.roleName;
+  if (roleUser !== "Customer") {
+    res.status(403);
+    throw new Error("Only customers can be created for booking");
+  }
+  const { licensePlate, bookingStart, bookingEnd, voucherCode } = req.body;
+  if (
+    licensePlate === undefined ||
+    bookingStart === undefined ||
+    bookingEnd === undefined
+  ) {
+    res.status(400);
+    throw new Error("All field not be empty!");
+  }
+  const vehicleAvailable = await Vehicle.findOne({ licensePlate });
+  if (!vehicleAvailable) {
+    res.status(404);
+    throw new Error("Vehicle not Found!");
+  }
+  if (vehicleAvailable.isRented) {
+    res.status(500);
+    throw new Error("Vehicle has already booked by other Customer!");
+  }
+  const start = new Date(bookingStart);
+  const end = new Date(bookingEnd);
+  const get_day_of_rent = (start, end) => {
+    let bookingStart = start.getTime();
+    let bookingEnd = end.getTime();
+    return Math.ceil((bookingEnd - bookingStart) / (24 * 60 * 60 * 1000));
+  };
+  const totalDayBooking = get_day_of_rent(start, end);
+  const totalPrice = totalDayBooking * vehicleAvailable.price;
+  if (voucherCode !== undefined) {
+    const voucher = await Voucher.findOne({ code: voucherCode });
+    if (!voucher) {
+      res.status(404);
+      throw new Error("Voucher not found");
+    }
+    if (voucher.isPercent) {
+    }
+  }
+  const booking = await Booking.create({
+    user_id: req.user.id,
+    vehicle_id: vehicleAvailable._id.toString(),
+    bookingStart: start,
+    bookingEnd: end,
+    totalPrice: totalPrice,
+  });
+  if (booking) {
+    changeStatusVehicle(vehicleAvailable);
+    const user = await User.findById(vehicleAvailable.user_id);
+    if (user.profit === undefined) {
+      user.profit = 0;
+    }
+    const profitUser = user.profit + totalPrice * 0.95;
+    const updateProfitUser = await User.findByIdAndUpdate(
+      vehicleAvailable.user_id,
+      {
+        profit: profitUser,
+      }
+    );
+    const admin = await User.findOne({ email: "admin@gmail.com" });
+    const profitAdmin = admin.profit + totalPrice * 0.05;
+    const updateProfitAdmin = await User.findByIdAndUpdate(admin._id, {
+      profit: profitAdmin,
+    });
+    if (updateProfitUser && updateProfitAdmin) {
+      res.status(201).json(booking);
+    } else {
+      res.status(400);
+      throw new Error("Something went wrong when updating user profit");
+    }
+  } else {
+    res.status(500);
+    throw new Error("Vehicle data is not Valid");
   }
 });
 
@@ -178,64 +284,82 @@ const createBooking = asyncHandler(async (req, res, next) => {
 //@route GET /api/bookings/:id
 //@access private
 const getBookingById = asyncHandler(async (req, res, next) => {
-  const bookingId = req.params.bookingId;
-  const booking = await Booking.findById(bookingId);
-  if (!booking) {
-    res.status(404);
-    throw new Error('Booking Not Found!');
+  try {
+    const bookingId = req.params.bookingId;
+    const booking = await Booking.findById(bookingId)
+      .populate("user_id")
+      .populate("vehicle_id")
+      .populate("user_canceled")
+      .populate("voucher_id")
+      .exec();
+    if (!booking) {
+      res.status(404);
+      throw new Error("Booking Not Found!");
+    }
+    const userId = booking.user_id.toString();
+    if (req.user.id !== userId) {
+      res.status(403);
+      throw new Error(
+        "You don't have permission to get other customer booking's information"
+      );
+    }
+    res.status(200).json(booking);
+  } catch (error) {
+    res.status(res.statusCode || 500).send(error.message);
   }
-  const userId = booking.user_id.toString();
-  if (req.user.id !== userId) {
-    res.status(403);
-    throw new Error(
-      "You don't have permission to get other customer booking's information"
-    );
-  }
-  res.status(200).json(booking);
 });
 
 //@desc Update Vehicle
 //@route PUT /api/Booking/:bookingId
 //@access private
 const cancelBooking = asyncHandler(async (req, res, next) => {
-  const bookingId = req.params.bookingId;
-  const booking = await Booking.findById(bookingId);
-  if (!booking) {
-    res.status(404);
-    throw new Error('Booking Not Found!');
-  }
-  const userId = booking.user_id.toString();
-  if (req.user.id !== userId) {
-    res.status(403);
-    throw new Error(
-      "You don't have permission to cancel other customer booking's!"
-    );
-  }
-  const cancelBooking = await Booking.findByIdAndUpdate(
-    { _id: bookingId },
-    {
-      bookingStatus: 'Cancelled',
-    },
-    {
-      new: true,
+  try {
+    const bookingId = req.params.bookingId;
+    const booking = await Booking.findById(bookingId)
+      .populate("user_id")
+      .populate("vehicle_id")
+      .populate("user_canceled")
+      .populate("voucher_id")
+      .exec();
+    if (!booking) {
+      res.status(404);
+      throw new Error("Booking Not Found!");
     }
-  );
-  if (cancelBooking) {
-    const vehicle = await Vehicle.findOne({
-      licensePlate: booking.licensePlate,
-    });
-    if (vehicle) {
-      changeStatusVehicle(vehicle);
-    } else {
-      res.status(500);
+    const userId = booking.user_id.toString();
+    if (req.user.id !== userId) {
+      res.status(403);
       throw new Error(
-        'Something went wrong of change status in cancelling booking!'
+        "You don't have permission to cancel other customer booking's!"
       );
     }
-    res.status(200).json(cancelBooking);
-  } else {
-    res.status(500);
-    throw new Error('Something went wrong in cancelling booking!');
+    const cancelBooking = await Booking.findByIdAndUpdate(
+      { _id: bookingId },
+      {
+        bookingStatus: "Cancelled",
+      },
+      {
+        new: true,
+      }
+    );
+    if (cancelBooking) {
+      const vehicle = await Vehicle.findOne({
+        licensePlate: booking.vehicle_id.licensePlate,
+      });
+      if (vehicle) {
+        changeStatusVehicle(vehicle);
+      } else {
+        res.status(500);
+        throw new Error(
+          "Something went wrong of change status in cancelling booking!"
+        );
+      }
+      res.status(200).json(cancelBooking);
+    } else {
+      res.status(500);
+      throw new Error("Something went wrong in cancelling booking!");
+    }
+  } catch (error) {
+    res.status(res.statusCode || 500).send(error.message);
   }
 });
 
@@ -244,28 +368,33 @@ const cancelBooking = asyncHandler(async (req, res, next) => {
 //@access private
 const deleteBookingsForAdmin = asyncHandler(async (req, res, next) => {
   const bookingId = req.params.bookingId;
-  const booking = await Booking.findById(bookingId);
+  const booking = await Booking.findById(bookingId)
+    .populate("user_id")
+    .populate("vehicle_id")
+    .populate("user_canceled")
+    .populate("voucher_id")
+    .exec();
   if (!booking) {
     res.status(404);
-    throw new Error('Booking Not Found!');
+    throw new Error("Booking Not Found!");
   }
-  if (req.user.roleName !== 'Admin') {
+  if (req.user.roleName !== "Admin") {
     res.status(403);
     throw new Error(
       "You don't have permission to get other customer booking's information"
     );
   }
   const bookingStatus = booking.bookingStatus;
-  if (bookingStatus === 'Processing') {
+  if (bookingStatus === "Processing") {
     res.status(500);
-    throw new Error('This booking is already in progress');
+    throw new Error("This booking is already in progress");
   }
   const deleteBooking = await Booking.findByIdAndDelete(booking._id);
   if (deleteBooking) {
     res.status(200).json(deleteBooking);
   } else {
     res.status(500);
-    throw new Error('Something went wrong in deleting booking');
+    throw new Error("Something went wrong in deleting booking");
   }
 });
 
@@ -274,47 +403,59 @@ const deleteBookingsForAdmin = asyncHandler(async (req, res, next) => {
 //@access private
 const returnVehicleAfterBooking = asyncHandler(async (req, res) => {
   const bookingId = req.params.bookingId;
-  const booking = await Booking.findById(bookingId);
+  const booking = await Booking.findById(bookingId)
+    .populate("user_id")
+    .populate("vehicle_id")
+    .populate("user_canceled")
+    .populate("voucher_id")
+    .exec();
   if (!booking) {
     res.status(404);
-    throw new Error('Booking not found');
+    throw new Error("Booking not found");
   }
-  if (req.user.roleName !== 'Hotelier') {
+  if (req.user.roleName !== "Hotelier") {
     res.status(403);
-    throw new Error('Only Hotels are allowed!');
+    throw new Error("Only Hotels are allowed!");
   }
-  if (booking.bookingStatus !== 'Processing') {
+  if (booking.bookingStatus !== "Processing") {
     res.status(400);
-    throw new Error('Booking status is not suitable!');
+    throw new Error("Booking status is not suitable!");
   }
-  const vehicle = await Vehicle.findOne({ licensePlate: booking.licensePlate });
+  const vehicle = await Vehicle.findOne({
+    licensePlate: booking.vehicle_id.licensePlate,
+  });
   if (!vehicle) {
     res.status(404);
-    throw new Error('Vehicle not found!');
+    throw new Error("Vehicle not found!");
   }
   if (req.user.id.toString() !== vehicle.user_id.toString()) {
     res.status(403);
-    throw new Error('Only Vehicle owners can do this action!');
+    throw new Error("Only Vehicle owners can do this action!");
   }
   const isChange = changeStatusVehicle(vehicle);
   if (!isChange) {
     res.status(500);
     throw new Error(
-      'Something went wrong with change status vehicle in return vehicle after booking'
+      "Something went wrong with change status vehicle in return vehicle after booking"
     );
   }
   const updateBooking = await Booking.findByIdAndUpdate(
     { _id: bookingId },
     {
-      bookingStatus: 'Completed',
+      bookingStatus: "Completed",
     },
     {
       new: true,
     }
-  );
+  )
+    .populate("user_id")
+    .populate("vehicle_id")
+    .populate("user_canceled")
+    .populate("voucher_id")
+    .exec();
   if (!updateBooking) {
     res.status(500);
-    throw new Error('Something went wrong in return vehicle after booking');
+    throw new Error("Something went wrong in return vehicle after booking");
   }
   res.status(200).json(updateBooking);
 });

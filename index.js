@@ -2,12 +2,10 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const morgan = require("morgan");
 const dotenv = require("dotenv").config({ path: "./config.env" });
 const path = require("path");
 const errorHandler = require("./src/app/middleware/errorHandler");
 const userRouter = require("./src/routes/UserRouter");
-const vehicleRouter = require("./src/routes/VehicleRouter");
 const authRouter = require("./src/routes/AuthRouter");
 const filterRouter = require("./src/routes/FilterRouter");
 const bookingRouter = require("./src/routes/BookingRouter");
@@ -81,6 +79,13 @@ app.use(cookieParser());
 
 const expressSession = require("express-session");
 const paypalRouter = require("./src/routes/PaypalRouter");
+const carRouter = require("./src/routes/CarRouter");
+const motorbikeRouter = require("./src/routes/MotorbikeRouter");
+const vehicleRouter = require("./src/routes/VehicleRouter");
+const autoMakerRouter = require("./src/routes/AutoMakerRouter");
+const modelRouter = require("./src/routes/ModelRouter");
+const voucherRouter = require("./src/routes/VoucherRouter");
+const categoryRouter = require("./src/routes/CategoryRouter");
 
 //Use Session
 app.use(
@@ -99,11 +104,17 @@ app.use(express.static(path.resolve(__dirname, "public")));
 
 // routers
 app.use("/api/users", userRouter);
+app.use("/api/cars", carRouter);
+app.use("/api/motorbikes", motorbikeRouter);
+app.use("/api/autoMakers", autoMakerRouter);
+app.use("/api/models", modelRouter);
+app.use("/api/categories", categoryRouter);
 app.use("/api/vehicles", vehicleRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/filters", filterRouter);
 app.use("/api/bookings", bookingRouter);
 app.use("/api/paypal", paypalRouter);
+app.use("/api/vouchers", voucherRouter);
 
 // Global error handler
 app.use(errorHandler);

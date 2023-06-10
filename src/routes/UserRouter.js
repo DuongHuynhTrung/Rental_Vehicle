@@ -11,7 +11,7 @@ const {
   searchUserByName,
   currentUser,
   blockUsers,
-  updateRoleToHotelier,
+  updateRoleToAccommodation,
   changePassword,
   checkOldPassword,
   updateAvatarUser,
@@ -20,6 +20,7 @@ const {
   forgotPasswordSMS,
   sendOTPWhenRegister,
   verifyOTPWhenRegister,
+  updateRoleToOwner,
 } = require("../app/controllers/UserController");
 const {
   getDrivingLicenseOfUser,
@@ -27,8 +28,8 @@ const {
   updateDrivingLicense,
   deleteDrivingLicense,
 } = require("../app/controllers/DrivingLicenseController");
-const validateToken = require("../app/middleware/validateTokenHandler");
 const multer = require("multer");
+const { validateToken } = require("../app/middleware/validateTokenHandler");
 
 /**
  *  @swagger
@@ -805,12 +806,12 @@ userRouter
 
 /**
  * @swagger
- * /api/users/upRole/{id}:
+ * /api/users/upRoleAccommodation/{id}:
  *  get:
  *    tags:
  *      - Users
- *    summary: Update role User To Hotelier
- *    description: Update role User To Hotelier
+ *    summary: Update role User To Accommodation
+ *    description: Update role User To Accommodation
  *    parameters:
  *      - name: id
  *        in: path
@@ -819,7 +820,7 @@ userRouter
  *        type: string
  *    responses:
  *      200:
- *        description: Successfully update role User to Hotelier
+ *        description: Successfully update role User to Accommodation
  *        content:
  *          application/json:
  *            schema:
@@ -827,18 +828,55 @@ userRouter
  *              properties:
  *                description:
  *                  type: string
- *                  example: Successfully update role User to Hotelier!
+ *                  example: Successfully update role User to Accommodation!
  *                data:
  *                  type: array
  *                  items:
  *                    $ref: '#/components/schemas/User'
  *      403:
- *        description: Only Admin can update role User to Hotelier
+ *        description: Only Admin can update role User to Accommodation
  *      404:
  *        description: User Not Found!
  *
  */
-userRouter.route("/upRole/:id").get(updateRoleToHotelier);
+userRouter.route("/upRoleAccommodation/:id").get(updateRoleToAccommodation);
+
+/**
+ * @swagger
+ * /api/users/upRoleOwner/{id}:
+ *  get:
+ *    tags:
+ *      - Users
+ *    summary: Update role User To Owner
+ *    description: Update role User To Owner
+ *    parameters:
+ *      - name: id
+ *        in: path
+ *        required: true
+ *        description: User id
+ *        type: string
+ *    responses:
+ *      200:
+ *        description: Successfully update role User to Owner
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                description:
+ *                  type: string
+ *                  example: Successfully update role User to Owner!
+ *                data:
+ *                  type: array
+ *                  items:
+ *                    $ref: '#/components/schemas/User'
+ *      403:
+ *        description: Only Admin can update role User to Owner
+ *      404:
+ *        description: User Not Found!
+ *
+ */
+userRouter.route("/upRoleOwner/:id").get(updateRoleToOwner);
 
 /**
  * @swagger

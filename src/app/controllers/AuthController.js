@@ -36,6 +36,7 @@ const login = asyncHandler(async (req, res, next) => {
           email: user.email,
           roleName: role.roleName,
           role_id: user.role_id,
+          imgURL: user.imgURL,
           id: user.id,
         },
       },
@@ -51,6 +52,7 @@ const login = asyncHandler(async (req, res, next) => {
           email: user.email,
           roleName: role.roleName,
           role_id: user.role_id,
+          imgURL: user.imgURL,
           id: user.id,
         },
       },
@@ -84,12 +86,50 @@ const loginGoogle = asyncHandler(async (req, res, next) => {
       throw new Error("All fields are required");
     }
     const isExist = await User.findOne({ email });
+    const role = await Role.findOne({ roleName: "Customer" });
     if (isExist) {
-      res.status(400);
-      throw new Error("User already exists");
+      const accessToken = jwt.sign(
+        {
+          user: {
+            firstName: isExist.firstName,
+            lastName: isExist.lastName,
+            email: isExist.email,
+            roleName: role.roleName,
+            role_id: isExist.role_id,
+            imgURL: isExist.imgURL,
+            id: isExist.id,
+          },
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "1d" }
+      );
+      const refreshToken = jwt.sign(
+        {
+          user: {
+            firstName: isExist.firstName,
+            lastName: isExist.lastName,
+            email: isExist.email,
+            roleName: role.roleName,
+            role_id: isExist.role_id,
+            imgURL: isExist.imgURL,
+            id: isExist.id,
+          },
+        },
+        process.env.REFRESH_TOKEN_SECRET,
+        { expiresIn: "7d" }
+      );
+
+      // Create secure cookie with refresh token
+      res.cookie("jwt", refreshToken, {
+        httpOnly: true, //accessible only by web server
+        secure: true, //https
+        sameSite: "None", //cross-site cookie
+        maxAge: 7 * 24 * 60 * 60 * 1000, //cookie expiry: set to match rT
+      });
+
+      res.status(200).json({ accessToken });
     }
 
-    const role = await Role.findOne({ roleName: "Customer" });
     const user = await User.create({
       firstName,
       lastName,
@@ -109,6 +149,7 @@ const loginGoogle = asyncHandler(async (req, res, next) => {
           email: user.email,
           roleName: role.roleName,
           role_id: user.role_id,
+          imgURL: user.imgURL,
           id: user.id,
         },
       },
@@ -124,6 +165,7 @@ const loginGoogle = asyncHandler(async (req, res, next) => {
           email: user.email,
           roleName: role.roleName,
           role_id: user.role_id,
+          imgURL: user.imgURL,
           id: user.id,
         },
       },
@@ -170,6 +212,7 @@ const loginOauth = asyncHandler(async (req, res, next) => {
           email: user.email,
           roleName: role.roleName,
           role_id: user.role_id,
+          imgURL: user.imgURL,
           id: user.id,
         },
       },
@@ -185,6 +228,7 @@ const loginOauth = asyncHandler(async (req, res, next) => {
           email: user.email,
           roleName: role.roleName,
           role_id: user.role_id,
+          imgURL: user.imgURL,
           id: user.id,
         },
       },
@@ -245,6 +289,7 @@ const refresh = (req, res) => {
             email: user.email,
             roleName: role.roleName,
             role_id: user.role_id,
+            imgURL: user.imgURL,
             id: user.id,
           },
         },
@@ -311,6 +356,7 @@ passport.use(
                 email: user.email,
                 roleName: role.roleName,
                 role_id: user.role_id,
+                imgURL: user.imgURL,
                 id: user.id,
               },
             },
@@ -326,6 +372,7 @@ passport.use(
                 email: user.email,
                 roleName: role.roleName,
                 role_id: user.role_id,
+                imgURL: user.imgURL,
                 id: user.id,
               },
             },
@@ -362,6 +409,7 @@ passport.use(
                 email: user.email,
                 roleName: role.roleName,
                 role_id: user.role_id,
+                imgURL: user.imgURL,
                 id: user.id,
               },
             },
@@ -377,6 +425,7 @@ passport.use(
                 email: user.email,
                 roleName: role.roleName,
                 role_id: user.role_id,
+                imgURL: user.imgURL,
                 id: user.id,
               },
             },

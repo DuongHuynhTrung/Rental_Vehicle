@@ -1,136 +1,63 @@
-const asyncHandler = require('express-async-handler');
-const Vehicle = require('../models/Vehicle');
-const VehicleDetails = require('../models/VehicleDetails');
-const XLSX = require('xlsx');
-const User = require('../models/User');
+const asyncHandler = require("express-async-handler");
+const Vehicle = require("../models/Vehicle");
+const VehicleDetails = require("../models/VehicleDetails");
+const XLSX = require("xlsx");
+const User = require("../models/User");
 
 //@desc Get all Vehicles Of User
 //@route GET /api/vehicles
 //@access private
 const getVehiclesOfUser = asyncHandler(async (req, res, next) => {
-  const vehicles = await Vehicle.find({ user_id: req.user.id });
-  if (vehicles.length === 0) {
-    res.status(404);
-    throw new Error("User don't register any Vehicle!");
+  try {
+    const vehicles = await Vehicle.find({ user_id: req.user.id })
+      .populate("user_id")
+      .exec();
+    if (vehicles.length === 0) {
+      res.status(404);
+      throw new Error("User don't register any Vehicle!");
+    }
+    res.status(200).json(vehicles);
+  } catch (error) {
+    res.status(res.statusCode || 500).send(error.message);
   }
-  res.status(200).json(vehicles);
 });
 
 //@desc Get all Vehicles to Welcome Page
 //@route GET /api/vehicles/home
 //@access private
 const getAllVehicles = asyncHandler(async (req, res, next) => {
-  const vehicles = await Vehicle.find().populate('user_id').exec();
-  if (vehicles.length === 0) {
-    res.status(404);
-    throw new Error("Website don't have any Vehicle!");
-  }
-  res.status(200).json(vehicles);
-});
-
-//@desc Register New Vehicle
-//@route POST /api/Vehicles
-//@access private
-const registerVehicle = asyncHandler(async (req, res, next) => {
-  const { licensePlate, description, insurance, price, isRented } = req.body;
-  let { image } = req.body;
-  if (
-    !licensePlate ||
-    !description ||
-    !insurance ||
-    !price ||
-    isRented == null
-  ) {
-    res.status(400);
-    throw new Error('All field not be empty!');
-  }
-  const vehicleAvailable = await Vehicle.findOne({ licensePlate });
-  if (vehicleAvailable) {
-    res.status(400);
-    throw new Error('Vehicle has already registered with License Plates!');
-  }
-  if (image === undefined) {
-    image = '';
-  }
-  const vehicle = await Vehicle.create({
-    user_id: req.user.id,
-    licensePlate,
-    description,
-    insurance,
-    price,
-    image,
-    isRented,
-  });
-  if (vehicle) {
-    res.status(201).json(vehicle);
-  } else {
-    res.status(400);
-    throw new Error('Vehicle data is not Valid');
+  try {
+    const vehicles = await Vehicle.find().populate("user_id").exec();
+    if (vehicles.length === 0) {
+      res.status(404);
+      throw new Error("Website don't have any Vehicle!");
+    }
+    res.status(200).json(vehicles);
+  } catch (error) {
+    res.status(res.statusCode || 500).send(error.message);
   }
 });
 
 //@desc Get Vehicle
-//@route GET /api/Vehicles/:id
+//@route GET /api/Vehicles/:licensePlate
 //@access private
-const getVehicleById = asyncHandler(async (req, res, next) => {
-  const licensePlate = req.params.licensePlate;
-  const vehicle = await Vehicle.findOne({ licensePlate });
-  if (!vehicle) {
-    res.status(404);
-    throw new Error('Vehicle Not Found!');
-  }
-  res.status(200).json(vehicle);
-});
-
-//@desc Update Vehicle
-//@route PUT /api/Vehicles/:id
-//@access private
-const updateVehicles = asyncHandler(async (req, res, next) => {
-  const licensePlate = req.params.licensePlate;
-  const vehicle = await Vehicle.findOne({ licensePlate });
-  if (!vehicle) {
-    res.status(404);
-    throw new Error('Vehicle Not Found!');
-  }
-  const { description, insurance, image, price } = req.body;
-  if (!description || !insurance || image || price) {
-    res.status(400);
-    throw new Error('All field not be empty!');
-  }
-  const userId = vehicle.user_id.toString();
-  if (userId !== req.user.id) {
-    res.status(403);
-    throw new Error(
-      "You don't have permission to update vehicle's information!"
-    );
-  }
-  const updateVehicle = await Vehicle.findByIdAndUpdate(
-    vehicle._id.toString(),
-    req.body,
-    {
-      new: true,
+const getVehicleByLicensePlate = asyncHandler(async (req, res, next) => {
+  try {
+    const licensePlate = req.params.licensePlate;
+    console.log(licensePlate);
+    if (!licensePlate) {
+      res.status(404);
+      throw new Error(`Invalid licensePlate`);
     }
-  );
-  res.status(200).json(updateVehicle);
-});
-
-//@desc Delete Vehicle
-//@route DELETE /api/Vehicles/:id
-//@access private
-const deleteVehicles = asyncHandler(async (req, res, next) => {
-  const licensePlate = req.params.licensePlate;
-  const vehicle = await Vehicle.findOne({ licensePlate });
-  if (!vehicle) {
-    res.status(404);
-    throw new Error('Vehicle Not Found!');
+    const vehicle = await Vehicle.findOne({ licensePlate });
+    if (!vehicle) {
+      res.status(404);
+      throw new Error("Vehicle Not Found!");
+    }
+    res.status(200).json(vehicle);
+  } catch (error) {
+    res.status(res.statusCode || 500).send(error.message);
   }
-  const userId = vehicle.user_id.toString();
-  if (userId !== req.user.id) {
-    res.status(403);
-    throw new Error("You don't have permission to update other vehicle!");
-  }
-  await Vehicle.deleteOne({ _id: vehicle._id });
-  res.status(200).json(vehicle);
 });
 
 const uploadVehicleFromExcel = async (req, res, next) => {
@@ -140,7 +67,7 @@ const uploadVehicleFromExcel = async (req, res, next) => {
   let count = 0;
   let totalVehicle = 0;
   let totalVehicleDetails = 0;
-  sheet_nameList.forEach(async (element) => {
+  sheet_nameList.forEach(async () => {
     const xlData = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_nameList[x]]);
     xlData.forEach(async (item) => {
       count++;
@@ -202,14 +129,14 @@ const uploadVehicleFromExcel = async (req, res, next) => {
             if (!vehicleDetail) {
               res.status(400);
               throw new Error(
-                'Something went wrong in create vehicleDetails when loading excel file'
+                "Something went wrong in create vehicleDetails when loading excel file"
               );
             }
           }
         } else {
           res.status(400);
           throw new Error(
-            'Something went wrong with the Excel file. Please check carefully!'
+            "Something went wrong with the Excel file. Please check carefully!"
           );
         }
       }
@@ -224,9 +151,5 @@ const uploadVehicleFromExcel = async (req, res, next) => {
 module.exports = {
   getVehiclesOfUser,
   getAllVehicles,
-  registerVehicle,
-  getVehicleById,
-  updateVehicles,
-  deleteVehicles,
-  uploadVehicleFromExcel,
+  getVehicleByLicensePlate,
 };

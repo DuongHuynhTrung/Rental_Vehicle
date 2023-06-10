@@ -1,35 +1,64 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const vehicleSchema = mongoose.Schema(
   {
+    name: {
+      type: String,
+      required: true,
+    },
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       require: true,
     },
     licensePlate: {
       type: String,
-      required: [true, "Please add vehicle's license plates."],
+      required: true,
       unique: true,
     },
     description: {
       type: String,
+      required: true,
       maxLength: 255,
-    },
-    insurance: {
-      type: String,
-      required: [true, "Please add vehicle's insurance."],
     },
     price: {
       type: Number,
       required: true,
     },
-    image: {
+    location: {
       type: String,
+      required: true,
+    },
+    yearOfManufacturer: {
+      type: Number,
+      required: true,
+    },
+    insurance: {
+      type: Boolean,
+      required: true,
+    },
+    images: {
+      type: [String],
+      required: true,
+    },
+    mortgage: {
+      type: Boolean,
+      required: true,
+    },
+    booked: {
+      type: Number,
+      default: 0,
     },
     isRented: {
       type: Boolean,
       required: true,
+      default: false,
+    },
+    rate: {
+      type: Number,
+      min: 0,
+      max: 5,
+      default: 0,
     },
   },
   {
@@ -37,4 +66,4 @@ const vehicleSchema = mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model('Vehicle', vehicleSchema);
+module.exports = mongoose.model("Vehicle", vehicleSchema);

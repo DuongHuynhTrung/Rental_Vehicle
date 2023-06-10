@@ -16,6 +16,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
     gender,
     dob,
     address,
+    address_details,
     phone,
     email,
     password,
@@ -27,6 +28,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
     !gender ||
     !dob ||
     !address ||
+    !address_details ||
     !phone ||
     !email ||
     !password ||
@@ -56,6 +58,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
     gender,
     dob,
     address,
+    address_details,
     phone,
     email,
     password: hashedPassword,
@@ -102,7 +105,68 @@ const sendOTPWhenRegister = asyncHandler(async (req, res) => {
       to: email,
       subject: "Verify OTP when registering",
       // text: `Your OTP to reset your password is: ${otp}`,
-      html: "<h1>This is a html email</h1><p style={color: 'red'}>It supports <strong>html</strong> content.</p>",
+      html: `<body style="background-color:#ffffff;font-family:HelveticaNeue,Helvetica,Arial,sans-serif">
+          <table
+            align="center"
+            role="presentation"
+            cellSpacing="0"
+            cellPadding="0"
+            border="0"
+            width="100%"
+            style="max-width:37.5em;background-color:#ffffff;border:1px solid #eee;border-radius:5px;box-shadow:0 5px 10px rgba(20,50,70,.2);margin-top:20px;width:360px;margin:0 auto;padding:68px 0 130px"
+          >
+            <tr style="width:100%">
+              <td>
+                <img
+                  alt="Plaid"
+                  src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t1.15752-9/349327131_6368862009826485_8287991177646664794_n.png?_nc_cat=109&ccb=1-7&_nc_sid=ae9488&_nc_ohc=CFCOpGi4ZhYAX81sRTS&_nc_ht=scontent.fsgn19-1.fna&oh=03_AdTgMIlkh0evXvMFxRKsZfvMn2uZ81u3AmTt4qLoyLuPkw&oe=64A0D375"
+                  width="150"
+                  height="auto"
+                  style="display:block;outline:none;border:none;text-decoration:none;margin:0 auto"
+                />
+                <p style="font-size:11px;line-height:16px;margin:16px 8px 8px 8px;color:#0a85ea;font-weight:700;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;height:16px;letter-spacing:0;text-transform:uppercase;text-align:center">
+                  Verify Your Email
+                </p>
+                <h1 style="color:#000;display:inline-block;font-family:HelveticaNeue-Medium,Helvetica,Arial,sans-serif;font-size:20px;font-weight:500;line-height:24px;margin-bottom:0;margin-top:0;text-align:center">
+                  Enter the following code to finish create account
+                </h1>
+                <table
+                  style="background:rgba(0,0,0,.05);border-radius:4px;margin:16px auto 14px;vertical-align:middle;width:280px"
+                  align="center"
+                  border="0"
+                  cellPadding="0"
+                  cellSpacing="0"
+                  role="presentation"
+                  width="100%"
+                >
+                  <tbody>
+                    <tr>
+                      <td>
+                        <p style="font-size:32px;line-height:40px;margin:0 auto;color:#000;display:inline-block;font-family:HelveticaNeue-Bold;font-weight:700;letter-spacing:6px;padding-bottom:8px;padding-top:8px;width:100%;text-align:center">
+                          ${otp}
+                        </p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p style="font-size:15px;line-height:23px;margin:0;color:#444;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;letter-spacing:0;padding:0 40px;text-align:center">
+                  Not expecting this email?
+                </p>
+                <p style="font-size:15px;line-height:23px;margin:0;color:#444;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;letter-spacing:0;padding:0 40px;text-align:center">
+                  Contact
+                  <a
+                    target="_blank"
+                    style="color:#444;text-decoration:underline"
+                    href="mailto:infor.driveconn@gmail.com.com"
+                  >
+                    infor.driveconn@gmail.com
+                  </a>
+                  if you did not request this code.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </body>`,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
@@ -296,8 +360,17 @@ const updateUsers = asyncHandler(async (req, res, next) => {
     res.status(404);
     throw new Error("User Not Found!");
   }
-  const { firstName, lastName, gender, dob, address, phone } = req.body;
-  if (!firstName || !lastName || !gender || !dob || !address || !phone) {
+  const { firstName, lastName, gender, dob, address, address_details, phone } =
+    req.body;
+  if (
+    !firstName ||
+    !lastName ||
+    !gender ||
+    !dob ||
+    !address ||
+    !address_details ||
+    !phone
+  ) {
     res.status(400);
     throw new Error("All field not be empty!");
   }
@@ -336,10 +409,10 @@ const deleteUsers = asyncHandler(async (req, res, next) => {
   res.status(200).json(user);
 });
 
-//@desc update Role of user to Hotelier
-//@route GET /api/users/upRole/:id
+//@desc update Role of user to Accommodation
+//@route GET /api/users/upRoleAccommodation/:id
 //@access private
-const updateRoleToHotelier = asyncHandler(async (req, res, next) => {
+const updateRoleToAccommodation = asyncHandler(async (req, res, next) => {
   const user_id = req.params.id;
   const user = await User.findById(user_id);
   if (!user) {
@@ -348,7 +421,7 @@ const updateRoleToHotelier = asyncHandler(async (req, res, next) => {
   }
   if (req.user.roleName !== "Admin") {
     res.status(403);
-    throw new Error("Only Admin can update role of User to Hotelier");
+    throw new Error("Only Admin can update role of User to Accommodation");
   }
   const updateRole = await User.findByIdAndUpdate(
     user_id,
@@ -359,7 +432,36 @@ const updateRoleToHotelier = asyncHandler(async (req, res, next) => {
   );
   if (!updateRole) {
     res.status(500);
-    throw new Error("Something when wrong in update Role User to Hotelier!");
+    throw new Error(
+      "Something when wrong in update Role User to Accommodation!"
+    );
+  }
+  res.status(200).json(updateRole);
+});
+//@desc update Role of user to Owner
+//@route GET /api/users/upRoleOwner/:id
+//@access private
+const updateRoleToOwner = asyncHandler(async (req, res, next) => {
+  const user_id = req.params.id;
+  const user = await User.findById(user_id);
+  if (!user) {
+    res.status(404);
+    throw new Error("User not Found!");
+  }
+  if (req.user.roleName !== "Admin") {
+    res.status(403);
+    throw new Error("Only Admin can update role of User to Owner");
+  }
+  const updateRole = await User.findByIdAndUpdate(
+    user_id,
+    {
+      role_id: "648451b57a77eb17c8884d88",
+    },
+    { new: true }
+  );
+  if (!updateRole) {
+    res.status(500);
+    throw new Error("Something when wrong in update Role User to Owner!");
   }
   res.status(200).json(updateRole);
 });
@@ -480,7 +582,68 @@ const forgotPassword = async (req, res) => {
       from: process.env.EMAIL,
       to: email,
       subject: "Reset Password OTP",
-      text: `Your OTP to reset your password is ${otp}`,
+      html: `<body style="background-color:#ffffff;font-family:HelveticaNeue,Helvetica,Arial,sans-serif">
+      <table
+        align="center"
+        role="presentation"
+        cellSpacing="0"
+        cellPadding="0"
+        border="0"
+        width="100%"
+        style="max-width:37.5em;background-color:#ffffff;border:1px solid #eee;border-radius:5px;box-shadow:0 5px 10px rgba(20,50,70,.2);margin-top:20px;width:360px;margin:0 auto;padding:68px 0 130px"
+      >
+        <tr style="width:100%">
+          <td>
+            <img
+              alt="Plaid"
+              src="https://scontent.fsgn19-1.fna.fbcdn.net/v/t1.15752-9/349327131_6368862009826485_8287991177646664794_n.png?_nc_cat=109&ccb=1-7&_nc_sid=ae9488&_nc_ohc=CFCOpGi4ZhYAX81sRTS&_nc_ht=scontent.fsgn19-1.fna&oh=03_AdTgMIlkh0evXvMFxRKsZfvMn2uZ81u3AmTt4qLoyLuPkw&oe=64A0D375"
+              width="150"
+              height="auto"
+              style="display:block;outline:none;border:none;text-decoration:none;margin:0 auto"
+            />
+            <p style="font-size:11px;line-height:16px;margin:16px 8px 8px 8px;color:#0a85ea;font-weight:700;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;height:16px;letter-spacing:0;text-transform:uppercase;text-align:center">
+              Verify Your Email
+            </p>
+            <h1 style="color:#000;display:inline-block;font-family:HelveticaNeue-Medium,Helvetica,Arial,sans-serif;font-size:20px;font-weight:500;line-height:24px;margin-bottom:0;margin-top:0;text-align:center">
+              Enter the following code to finish create account
+            </h1>
+            <table
+              style="background:rgba(0,0,0,.05);border-radius:4px;margin:16px auto 14px;vertical-align:middle;width:280px"
+              align="center"
+              border="0"
+              cellPadding="0"
+              cellSpacing="0"
+              role="presentation"
+              width="100%"
+            >
+              <tbody>
+                <tr>
+                  <td>
+                    <p style="font-size:32px;line-height:40px;margin:0 auto;color:#000;display:inline-block;font-family:HelveticaNeue-Bold;font-weight:700;letter-spacing:6px;padding-bottom:8px;padding-top:8px;width:100%;text-align:center">
+                      ${otp}
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p style="font-size:15px;line-height:23px;margin:0;color:#444;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;letter-spacing:0;padding:0 40px;text-align:center">
+              Not expecting this email?
+            </p>
+            <p style="font-size:15px;line-height:23px;margin:0;color:#444;font-family:HelveticaNeue,Helvetica,Arial,sans-serif;letter-spacing:0;padding:0 40px;text-align:center">
+              Contact
+              <a
+                target="_blank"
+                style="color:#444;text-decoration:underline"
+                href="mailto:infor.driveconn@gmail.com.com"
+              >
+                infor.driveconn@gmail.com
+              </a>
+              if you did not request this code.
+            </p>
+          </td>
+        </tr>
+      </table>
+    </body>`,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
@@ -606,7 +769,8 @@ module.exports = {
   searchUserByName,
   currentUser,
   blockUsers,
-  updateRoleToHotelier,
+  updateRoleToAccommodation,
+  updateRoleToOwner,
   checkOldPassword,
   changePassword,
   updateAvatarUser,
