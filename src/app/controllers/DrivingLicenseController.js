@@ -30,6 +30,7 @@ const registerDrivingLicense = asyncHandler(async (req, res, next) => {
     res.status(400);
     throw new Error("All field not be empty!");
   }
+  const date = new Date(expireDate);
   const drivingLicenseAvailable = await DrivingLicense.findOne({ licenseNo });
   if (drivingLicenseAvailable) {
     res.status(400);
@@ -41,7 +42,7 @@ const registerDrivingLicense = asyncHandler(async (req, res, next) => {
     user_id: req.user.id,
     licenseNo,
     licenseClass,
-    expireDate,
+    expireDate: date,
     image,
   });
   if (!drivingLicense) {

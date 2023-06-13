@@ -22,7 +22,7 @@ const drivingLicenseSchema = mongoose.Schema(
       required: true,
     },
     expireDate: {
-      type: String,
+      type: Date,
       required: true,
     },
     isConfirmed: {

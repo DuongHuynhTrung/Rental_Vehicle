@@ -50,6 +50,8 @@ const registerUser = asyncHandler(async (req, res, next) => {
       throw new Error("User has already registered with Phone Number!");
     }
 
+    const date = new Date(dob);
+
     //Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
     const role = await Role.findOne({ roleName });
@@ -57,7 +59,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
       firstName,
       lastName,
       gender,
-      dob,
+      dob: date,
       address,
       address_details,
       phone,

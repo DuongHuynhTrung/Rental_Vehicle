@@ -13,7 +13,7 @@ const { default: mongoose } = require("mongoose");
 //@access private
 const getCarsOfUser = asyncHandler(async (req, res, next) => {
   try {
-    const cars = await Car.find({ user_id: req.user.id })
+    const cars = await Car.find()
       .populate({
         path: "vehicle_id",
         populate: {
@@ -25,15 +25,18 @@ const getCarsOfUser = asyncHandler(async (req, res, next) => {
       .populate("model_id")
       .populate("category_id")
       .exec();
-    if (!cars) {
+    const items = cars.filter(
+      (car) => car.vehicle_id.user_id._id.toString() === req.user.id
+    );
+    if (!items) {
       res.status(500);
       throw new Error("Something went wrong when fetching cars of user");
     }
-    if (cars.length === 0) {
+    if (items.length === 0) {
       res.status(404);
       throw new Error("User don't register any Car!");
     }
-    res.status(200).json(cars);
+    res.status(200).json(items);
   } catch (error) {
     res.status(res.statusCode || 500).send(error.message);
   }
@@ -111,7 +114,10 @@ const registerCar = asyncHandler(async (req, res, next) => {
       res.status(400);
       throw new Error("All field not be empty!");
     }
-    const isCarExist = await Car.findOne({ licensePlate });
+    const cars = await Car.find().populate("vehicle_id", "licensePlate");
+    const isCarExist = cars.find(
+      (car) => car.vehicle_id.licensePlate === licensePlate
+    );
     if (isCarExist) {
       res.status(400);
       throw new Error("Car has already registered with License Plates!");
@@ -137,7 +143,7 @@ const registerCar = asyncHandler(async (req, res, next) => {
       throw new Error("User Not Found");
     }
     const vehicle = await Vehicle.create({
-      name: carModel.name + yearOfManufacturer,
+      name: carModel.name + " " + yearOfManufacturer,
       user_id: user._id.toString(),
       licensePlate,
       description,
@@ -175,8 +181,10 @@ const registerCar = asyncHandler(async (req, res, next) => {
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-
-    res.status(res.statusCode).send(error.message);
+    console.log(error);
+    res
+      .status(res.statusCode || 500)
+      .send(error.message || "Internal Server Error");
   }
 });
 
@@ -297,7 +305,7 @@ const updateCars = asyncHandler(async (req, res, next) => {
     const updateVehicle = await Vehicle.findByIdAndUpdate(
       vehicle._id,
       {
-        name: carModel.name + yearOfManufacturer,
+        name: carModel.name + " " + yearOfManufacturer,
         licensePlate,
         description,
         price,
@@ -316,7 +324,7 @@ const updateCars = asyncHandler(async (req, res, next) => {
       throw new Error("Something went wrong updating vehicle in updateCar");
     }
     const updateCar = await Car.findByIdAndUpdate(
-      Car._id.toString(),
+      car._id.toString(),
       {
         autoMaker_id: carAutoMaker._id.toString(),
         model_id: carModel._id.toString(),
@@ -350,6 +358,9 @@ const updateCars = asyncHandler(async (req, res, next) => {
 //@route DELETE /api/Cars/:id
 //@access private
 const deleteCars = asyncHandler(async (req, res, next) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     const licensePlate = req.params.licensePlate;
     if (!licensePlate) {
@@ -383,8 +394,15 @@ const deleteCars = asyncHandler(async (req, res, next) => {
         "Something went wrong deleting the vehicle! in deleteCar"
       );
     }
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
     res.status(200).json(deleteCar);
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+
     res.status(res.statusCode || 500).send(error.message);
   }
 });
