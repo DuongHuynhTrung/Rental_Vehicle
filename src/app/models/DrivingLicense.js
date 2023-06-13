@@ -17,6 +17,10 @@ const drivingLicenseSchema = mongoose.Schema(
       length: 10,
       required: true,
     },
+    image: {
+      type: String,
+      required: true,
+    },
     expireDate: {
       type: String,
       required: true,

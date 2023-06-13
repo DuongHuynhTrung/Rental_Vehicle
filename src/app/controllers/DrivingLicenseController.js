@@ -8,7 +8,7 @@ const getDrivingLicenseOfUser = asyncHandler(async (req, res, next) => {
   try {
     const drivingLicense = await DrivingLicense.findOne({
       user_id: req.user.id,
-    });
+    }).populate("user_id");
     if (!drivingLicense) {
       res.status(404);
       throw new Error("User doesn't register Driving License!");
@@ -25,8 +25,8 @@ const getDrivingLicenseOfUser = asyncHandler(async (req, res, next) => {
 //@route POST /api/user/drivingLicense
 //@access private
 const registerDrivingLicense = asyncHandler(async (req, res, next) => {
-  const { licenseNo, licenseClass, expireDate } = req.body;
-  if (!licenseNo || !licenseClass || !expireDate) {
+  const { licenseNo, licenseClass, expireDate, image } = req.body;
+  if (!licenseNo || !licenseClass || !expireDate || !image) {
     res.status(400);
     throw new Error("All field not be empty!");
   }
@@ -42,6 +42,7 @@ const registerDrivingLicense = asyncHandler(async (req, res, next) => {
     licenseNo,
     licenseClass,
     expireDate,
+    image,
   });
   if (!drivingLicense) {
     res.status(400);
@@ -111,11 +112,11 @@ const deleteDrivingLicense = asyncHandler(async (req, res, next) => {
 });
 
 //@desc Delete drivingLicense by user_id
-//@route DELETE /api/users/confirmed/:drivingLicense
+//@route DELETE /api/users/confirmedLicense/:drivingLicense
 //@access private
 const confirmedDrivingLicense = asyncHandler(async (req, res, next) => {
   try {
-    const licenseNo = req.params.driveLicense;
+    const licenseNo = req.params.drivingLicense;
     if (!licenseNo) {
       res.status(404);
       throw new Error(`Driving license with ${licenseNo} is invalid`);
@@ -125,6 +126,22 @@ const confirmedDrivingLicense = asyncHandler(async (req, res, next) => {
       res.status(404);
       throw new Error(`Driving license with ${licenseNo} is not found`);
     }
+    const confirmedDrivingLicense = await DrivingLicense.findByIdAndUpdate(
+      drivingLicense.id,
+      {
+        isConfirmed: true,
+      },
+      {
+        new: true,
+      }
+    );
+    if (!confirmedDrivingLicense) {
+      res.status(500);
+      throw new Error(
+        "Something went wrong when confirming the driver license"
+      );
+    }
+    res.status(200).send("Confirmed driver license successfully");
   } catch (error) {
     res
       .status(res.statusCode || 500)

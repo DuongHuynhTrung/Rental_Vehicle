@@ -27,9 +27,13 @@ const {
   registerDrivingLicense,
   updateDrivingLicense,
   deleteDrivingLicense,
+  confirmedDrivingLicense,
 } = require("../app/controllers/DrivingLicenseController");
 const multer = require("multer");
-const { validateToken } = require("../app/middleware/validateTokenHandler");
+const {
+  validateToken,
+  validateTokenAdmin,
+} = require("../app/middleware/validateTokenHandler");
 
 /**
  *  @swagger
@@ -651,6 +655,10 @@ userRouter
    */
 
   .delete(deleteDrivingLicense);
+
+userRouter
+  .route("/confirmedLicense/:drivingLicense")
+  .put(validateTokenAdmin, confirmedDrivingLicense);
 
 //Router for getUserByID, updateUser, deleteUser
 userRouter

@@ -2,52 +2,65 @@ const asyncHandler = require("express-async-handler");
 const jwt = require("jsonwebtoken");
 
 const validateToken = asyncHandler(async (req, res, next) => {
-  let token;
-  let authHeader = req.headers.authorization || req.headers.Authorization;
-  if (authHeader && authHeader.startsWith("Bearer")) {
-    token = authHeader.split(" ")[1];
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-      if (err) {
+  try {
+    let token;
+    let authHeader = req.headers.authorization || req.headers.Authorization;
+    if (authHeader && authHeader.startsWith("Bearer")) {
+      token = authHeader.split(" ")[1];
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+          res.status(401);
+          throw new Error("User is not Authorized!");
+        }
+        req.user = decoded.user;
+        next();
+      });
+      if (!token) {
         res.status(401);
-        throw new Error("User is not Authorized!");
+        throw new Error("User is not Authorized or token is missing");
       }
-      req.user = decoded.user;
-      next();
-    });
-    if (!token) {
+    } else {
       res.status(401);
-      throw new Error("User is not Authorized or token is missing");
+      throw new Error("Missing Access Token!");
     }
-  } else {
-    res.status(401);
-    throw new Error("Missing Access Token!");
+  } catch (error) {
+    res
+      .status(res.statusCode || 500)
+      .send(error.message || "Internal Server Error");
   }
 });
 
 const validateTokenAdmin = asyncHandler(async (req, res, next) => {
-  let token;
-  let authHeader = req.headers.authorization || req.headers.Authorization;
-  if (authHeader && authHeader.startsWith("Bearer")) {
-    token = authHeader.split(" ")[1];
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-      if (err) {
+  try {
+    let token;
+    let authHeader = req.headers.authorization || req.headers.Authorization;
+    if (authHeader && authHeader.startsWith("Bearer")) {
+      token = authHeader.split(" ")[1];
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+          res.status(401);
+          throw new Error("User is not Authorized!");
+        }
+        console.log(decoded.user.roleName);
+        if (decoded.user.roleName !== "Admin") {
+          res.status(403);
+          throw new Error("You are not allowed to access this");
+        }
+        req.user = decoded.user;
+        next();
+      });
+      if (!token) {
         res.status(401);
-        throw new Error("User is not Authorized!");
+        throw new Error("User is not Authorized or token is missing");
       }
-      if (decoded.user.roleName === "Admin") {
-        res.status(403);
-        throw new Error("You are not allowed to access this");
-      }
-      req.user = decoded.user;
-      next();
-    });
-    if (!token) {
+    } else {
       res.status(401);
-      throw new Error("User is not Authorized or token is missing");
+      throw new Error("Missing Access Token!");
     }
-  } else {
-    res.status(401);
-    throw new Error("Missing Access Token!");
+  } catch (error) {
+    res
+      .status(res.statusCode || 500)
+      .send(error.message || "Internal Server Error");
   }
 });
 
