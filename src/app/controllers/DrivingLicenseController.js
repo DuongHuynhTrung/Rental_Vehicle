@@ -1,16 +1,24 @@
-const asyncHandler = require('express-async-handler');
-const DrivingLicense = require('../models/DrivingLicense');
+const asyncHandler = require("express-async-handler");
+const DrivingLicense = require("../models/DrivingLicense");
 
 //@desc Get drivingLicense Of User
 //@route GET /api/users/drivingLicense
 //@access private
 const getDrivingLicenseOfUser = asyncHandler(async (req, res, next) => {
-  const drivingLicense = await DrivingLicense.findOne({ user_id: req.user.id });
-  if (!drivingLicense) {
-    res.status(404);
-    throw new Error("User doesn't register Driving License!");
+  try {
+    const drivingLicense = await DrivingLicense.findOne({
+      user_id: req.user.id,
+    });
+    if (!drivingLicense) {
+      res.status(404);
+      throw new Error("User doesn't register Driving License!");
+    }
+    res.status(200).json(drivingLicense);
+  } catch (error) {
+    res
+      .status(res.statusCode || 500)
+      .send(error.message || "Internal Server Error");
   }
-  res.status(200).json(drivingLicense);
 });
 
 //@desc Register New Driving License By User
@@ -20,13 +28,13 @@ const registerDrivingLicense = asyncHandler(async (req, res, next) => {
   const { licenseNo, licenseClass, expireDate } = req.body;
   if (!licenseNo || !licenseClass || !expireDate) {
     res.status(400);
-    throw new Error('All field not be empty!');
+    throw new Error("All field not be empty!");
   }
   const drivingLicenseAvailable = await DrivingLicense.findOne({ licenseNo });
   if (drivingLicenseAvailable) {
     res.status(400);
     throw new Error(
-      'Driving License Number has already registered by other User!'
+      "Driving License Number has already registered by other User!"
     );
   }
   const drivingLicense = await DrivingLicense.create({
@@ -37,7 +45,7 @@ const registerDrivingLicense = asyncHandler(async (req, res, next) => {
   });
   if (!drivingLicense) {
     res.status(400);
-    throw new Error('Driving License data is not Valid');
+    throw new Error("Driving License data is not Valid");
   }
   res.status(201).json(drivingLicense);
 });
@@ -54,7 +62,7 @@ const updateDrivingLicense = asyncHandler(async (req, res, next) => {
   const { licenseNo, licenseClass, expireDate } = req.body;
   if (!licenseNo || !licenseClass || !expireDate) {
     res.status(400);
-    throw new Error('All field not be empty!');
+    throw new Error("All field not be empty!");
   }
   const userId = drivingLicense.user_id.toString();
   if (userId !== req.user.id) {
@@ -67,7 +75,7 @@ const updateDrivingLicense = asyncHandler(async (req, res, next) => {
   if (drivingLicenseAvailable) {
     res.status(400);
     throw new Error(
-      'Driving License Number has already registered by other User!'
+      "Driving License Number has already registered by other User!"
     );
   }
   const updateDrivingLicense = await DrivingLicense.findByIdAndUpdate(
@@ -102,9 +110,32 @@ const deleteDrivingLicense = asyncHandler(async (req, res, next) => {
   if (deleteDrivingLicense) res.status(200).json(drivingLicense);
 });
 
+//@desc Delete drivingLicense by user_id
+//@route DELETE /api/users/confirmed/:drivingLicense
+//@access private
+const confirmedDrivingLicense = asyncHandler(async (req, res, next) => {
+  try {
+    const licenseNo = req.params.driveLicense;
+    if (!licenseNo) {
+      res.status(404);
+      throw new Error(`Driving license with ${licenseNo} is invalid`);
+    }
+    const drivingLicense = await DrivingLicense.findOne({ licenseNo });
+    if (!drivingLicense) {
+      res.status(404);
+      throw new Error(`Driving license with ${licenseNo} is not found`);
+    }
+  } catch (error) {
+    res
+      .status(res.statusCode || 500)
+      .send(error.message || "Internal Server Error");
+  }
+});
+
 module.exports = {
   getDrivingLicenseOfUser,
   registerDrivingLicense,
   updateDrivingLicense,
   deleteDrivingLicense,
+  confirmedDrivingLicense,
 };

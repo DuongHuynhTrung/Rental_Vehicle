@@ -19,7 +19,7 @@ const userSchema = mongoose.Schema(
       type: String,
     },
     dob: {
-      type: String,
+      type: Date,
     },
     address: {
       type: String,
@@ -28,7 +28,7 @@ const userSchema = mongoose.Schema(
       type: String,
     },
     phone: {
-      type: Number,
+      type: String,
       maxLength: 10,
     },
     email: {

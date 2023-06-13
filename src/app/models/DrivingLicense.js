@@ -1,11 +1,11 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const drivingLicenseSchema = mongoose.Schema(
   {
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      require: [true, 'User should have driving license for rent vehicle'],
+      ref: "User",
+      require: [true, "User should have driving license for rent vehicle"],
     },
     licenseNo: {
       type: Number,
@@ -21,10 +21,14 @@ const drivingLicenseSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    isConfirmed: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamp: true,
   }
 );
 
-module.exports = mongoose.model('DrivingLicense', drivingLicenseSchema);
+module.exports = mongoose.model("DrivingLicense", drivingLicenseSchema);
