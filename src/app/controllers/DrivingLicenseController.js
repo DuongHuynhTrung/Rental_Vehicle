@@ -6,7 +6,7 @@ const DrivingLicense = require("../models/DrivingLicense");
 //@access private
 const getDrivingLicenseOfUser = asyncHandler(async (req, res, next) => {
   try {
-    const drivingLicense = await DrivingLicense.findOne({
+    const drivingLicense = await DrivingLicense.find({
       user_id: req.user.id,
     }).populate("user_id");
     if (!drivingLicense) {
