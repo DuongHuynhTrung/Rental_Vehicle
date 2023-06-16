@@ -69,6 +69,14 @@ const createVoucher = asyncHandler(async (req, res, next) => {
       res.status(400);
       throw new Error("Start Date is Invalid");
     }
+    if (isPercent && (0 > discount_amount || discount_amount > 100)) {
+      res.status(400);
+      throw new Error("Discount Amount is between 0% and 100%");
+    }
+    if (!isPercent && (1000 > discount_amount || discount_amount > 1000000)) {
+      res.status(400);
+      throw new Error("Discount Amount is between 1.000 and 1.000.000");
+    }
     const voucher = await Voucher.create({
       user_id,
       code,

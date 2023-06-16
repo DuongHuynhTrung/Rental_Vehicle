@@ -10,6 +10,7 @@ const drivingLicenseSchema = mongoose.Schema(
     licenseNo: {
       type: Number,
       required: true,
+      maxLength: 12,
       unique: true,
     },
     licenseClass: {
@@ -31,7 +32,7 @@ const drivingLicenseSchema = mongoose.Schema(
     },
   },
   {
-    timestamp: true,
+    timestamps: true,
   }
 );
 

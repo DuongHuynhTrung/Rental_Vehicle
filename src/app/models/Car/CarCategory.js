@@ -12,7 +12,7 @@ const CarCategorySchema = mongoose.Schema(
     },
   },
   {
-    timestamp: true,
+    timestamps: true,
   }
 );
 

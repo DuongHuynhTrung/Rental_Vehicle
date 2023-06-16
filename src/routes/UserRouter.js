@@ -11,7 +11,7 @@ const {
   searchUserByName,
   currentUser,
   blockUsers,
-  updateRoleToAccommodation,
+  upgradeRole,
   changePassword,
   checkOldPassword,
   updateAvatarUser,
@@ -20,7 +20,6 @@ const {
   forgotPasswordSMS,
   sendOTPWhenRegister,
   verifyOTPWhenRegister,
-  updateRoleToOwner,
 } = require("../app/controllers/UserController");
 const {
   getDrivingLicenseOfUser,
@@ -847,44 +846,7 @@ userRouter
  *        description: User Not Found!
  *
  */
-userRouter.route("/upRoleAccommodation/:id").get(updateRoleToAccommodation);
-
-/**
- * @swagger
- * /api/users/upRoleOwner/{id}:
- *  get:
- *    tags:
- *      - Users
- *    summary: Update role User To Owner
- *    description: Update role User To Owner
- *    parameters:
- *      - name: id
- *        in: path
- *        required: true
- *        description: User id
- *        type: string
- *    responses:
- *      200:
- *        description: Successfully update role User to Owner
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                description:
- *                  type: string
- *                  example: Successfully update role User to Owner!
- *                data:
- *                  type: array
- *                  items:
- *                    $ref: '#/components/schemas/User'
- *      403:
- *        description: Only Admin can update role User to Owner
- *      404:
- *        description: User Not Found!
- *
- */
-userRouter.route("/upRoleOwner/:id").get(updateRoleToOwner);
+userRouter.route("/upRole").post(upgradeRole);
 
 /**
  * @swagger

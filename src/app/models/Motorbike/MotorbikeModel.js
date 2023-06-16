@@ -13,7 +13,7 @@ const MotorbikeModelSchema = mongoose.Schema(
     },
   },
   {
-    timestamp: true,
+    timestamps: true,
   }
 );
 

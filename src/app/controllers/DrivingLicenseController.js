@@ -6,8 +6,14 @@ const DrivingLicense = require("../models/DrivingLicense");
 //@access private
 const getDrivingLicenseOfUser = asyncHandler(async (req, res, next) => {
   try {
+    const user_id = req.body.user_id;
+    if (!user_id) {
+      res.status(404);
+      throw new Error("user_id is required");
+    }
+    console.log(user_id);
     const drivingLicense = await DrivingLicense.find({
-      user_id: req.user.id,
+      user_id,
     }).populate("user_id");
     if (!drivingLicense) {
       res.status(404);
@@ -25,91 +31,117 @@ const getDrivingLicenseOfUser = asyncHandler(async (req, res, next) => {
 //@route POST /api/user/drivingLicense
 //@access private
 const registerDrivingLicense = asyncHandler(async (req, res, next) => {
-  const { licenseNo, licenseClass, expireDate, image } = req.body;
-  if (!licenseNo || !licenseClass || !expireDate || !image) {
-    res.status(400);
-    throw new Error("All field not be empty!");
+  try {
+    const { licenseNo, licenseClass, expireDate, image } = req.body;
+    if (!licenseNo || !licenseClass || !expireDate || !image) {
+      res.status(400);
+      throw new Error("All field not be empty!");
+    }
+    const date = new Date(expireDate);
+    const drivingLicenseAvailable = await DrivingLicense.findOne({ licenseNo });
+    if (drivingLicenseAvailable) {
+      res.status(400);
+      throw new Error(
+        "Driving License Number has already registered by other User!"
+      );
+    }
+    const drivingLicense = await DrivingLicense.create({
+      user_id: req.user.id,
+      licenseNo,
+      licenseClass,
+      expireDate: date,
+      image,
+    });
+    if (!drivingLicense) {
+      res.status(400);
+      throw new Error("Driving License data is not Valid");
+    }
+    res.status(201).json(drivingLicense);
+  } catch (error) {
+    res
+      .status(res.statusCode || 500)
+      .send(error.message || "Internal Server Error");
   }
-  const date = new Date(expireDate);
-  const drivingLicenseAvailable = await DrivingLicense.findOne({ licenseNo });
-  if (drivingLicenseAvailable) {
-    res.status(400);
-    throw new Error(
-      "Driving License Number has already registered by other User!"
-    );
-  }
-  const drivingLicense = await DrivingLicense.create({
-    user_id: req.user.id,
-    licenseNo,
-    licenseClass,
-    expireDate: date,
-    image,
-  });
-  if (!drivingLicense) {
-    res.status(400);
-    throw new Error("Driving License data is not Valid");
-  }
-  res.status(201).json(drivingLicense);
 });
 
 //@desc Update drivingLicense by user_id
 //@route PUT /api/users/drivingLicense
 //@access private
 const updateDrivingLicense = asyncHandler(async (req, res, next) => {
-  const drivingLicense = await DrivingLicense.findOne({ user_id: req.user.id });
-  if (!drivingLicense) {
-    res.status(404);
-    throw new Error("User doesn't register Driving License!");
-  }
-  const { licenseNo, licenseClass, expireDate } = req.body;
-  if (!licenseNo || !licenseClass || !expireDate) {
-    res.status(400);
-    throw new Error("All field not be empty!");
-  }
-  const userId = drivingLicense.user_id.toString();
-  if (userId !== req.user.id) {
-    res.status(403);
-    throw new Error(
-      "You don't have permission to update drivingLicense's information!"
-    );
-  }
-  const drivingLicenseAvailable = await DrivingLicense.findOne({ licenseNo });
-  if (drivingLicenseAvailable) {
-    res.status(400);
-    throw new Error(
-      "Driving License Number has already registered by other User!"
-    );
-  }
-  const updateDrivingLicense = await DrivingLicense.findByIdAndUpdate(
-    drivingLicense._id.toString(),
-    req.body,
-    {
-      new: true,
+  try {
+    const drivingLicense = await DrivingLicense.findOne({
+      user_id: req.user.id,
+    });
+    if (!drivingLicense) {
+      res.status(404);
+      throw new Error("User doesn't register Driving License!");
     }
-  );
-  res.status(200).json(updateDrivingLicense);
+    const { licenseNo, licenseClass, expireDate } = req.body;
+    if (!licenseNo || !licenseClass || !expireDate) {
+      res.status(400);
+      throw new Error("All field not be empty!");
+    }
+    const userId = drivingLicense.user_id.toString();
+    if (userId !== req.user.id) {
+      res.status(403);
+      throw new Error(
+        "You don't have permission to update drivingLicense's information!"
+      );
+    }
+    const drivingLicenseAvailable = await DrivingLicense.findOne({ licenseNo });
+    if (drivingLicenseAvailable) {
+      res.status(400);
+      throw new Error(
+        "Driving License Number has already registered by other User!"
+      );
+    }
+    const updateDrivingLicense = await DrivingLicense.findByIdAndUpdate(
+      drivingLicense._id.toString(),
+      req.body,
+      {
+        new: true,
+      }
+    );
+    res.status(200).json(updateDrivingLicense);
+  } catch (error) {
+    res
+      .status(error.statusCode || 500)
+      .send(error.message || "Internal Server Error");
+  }
 });
 
 //@desc Delete drivingLicense by user_id
 //@route DELETE /api/users/drivingLicense
 //@access private
 const deleteDrivingLicense = asyncHandler(async (req, res, next) => {
-  const drivingLicense = await DrivingLicense.findOne({ user_id: req.user.id });
-  if (!drivingLicense) {
-    res.status(404);
-    throw new Error("User doesn't register Driving License!");
-  }
-  const userId = drivingLicense.user_id.toString();
-  if (userId !== req.user.id) {
-    res.status(403);
-    throw new Error(
-      "You don't have permission to delete other drivingLicense!"
+  try {
+    const drivingLicense = await DrivingLicense.findOne({
+      user_id: req.user.id,
+    });
+    if (!drivingLicense) {
+      res.status(404);
+      throw new Error("User doesn't register Driving License!");
+    }
+    const userId = drivingLicense.user_id.toString();
+    if (userId !== req.user.id) {
+      res.status(403);
+      throw new Error(
+        "You don't have permission to delete other drivingLicense!"
+      );
+    }
+    const deleteDrivingLicense = await DrivingLicense.findByIdAndUpdate(
+      drivingLicense._id
     );
+    if (!deleteDrivingLicense) {
+      res.status(500);
+      throw new Error("Something went wrong deleting drivingLicense");
+    }
+    res.status(200).json(drivingLicense);
+  } catch (error) {
+    res
+      .status(res.statusCode || 500)
+      .send(error.message || "Internal Server Error");
   }
-  const deleteDrivingLicense = await DrivingLicense.deleteOne({
-    _id: drivingLicense._id,
-  });
-  if (deleteDrivingLicense) res.status(200).json(drivingLicense);
 });
 
 //@desc Delete drivingLicense by user_id

@@ -47,9 +47,13 @@ const bookingSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isTransferred: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
-    timestamp: true,
+    timestamps: true,
   }
 );
 

@@ -25,7 +25,7 @@ const CarCommentSchema = mongoose.Schema(
     },
   },
   {
-    timestamp: true,
+    timestamps: true,
   }
 );
 

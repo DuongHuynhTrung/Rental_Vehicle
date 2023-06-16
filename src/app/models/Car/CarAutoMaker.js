@@ -8,7 +8,7 @@ const CarAutoMakerSchema = mongoose.Schema(
     },
   },
   {
-    timestamp: true,
+    timestamps: true,
   }
 );
 

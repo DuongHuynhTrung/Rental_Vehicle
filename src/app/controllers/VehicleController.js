@@ -1,6 +1,5 @@
 const asyncHandler = require("express-async-handler");
 const Vehicle = require("../models/Vehicle");
-const VehicleDetails = require("../models/VehicleDetails");
 const XLSX = require("xlsx");
 const User = require("../models/User");
 

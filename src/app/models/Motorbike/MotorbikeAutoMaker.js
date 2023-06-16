@@ -8,7 +8,7 @@ const MotorbikeAutoMakerSchema = mongoose.Schema(
     },
   },
   {
-    timestamp: true,
+    timestamps: true,
   }
 );
 

@@ -13,7 +13,7 @@ const CarModelSchema = mongoose.Schema(
     },
   },
   {
-    timestamp: true,
+    timestamps: true,
   }
 );
 

@@ -24,16 +24,16 @@ const registerUser = asyncHandler(async (req, res, next) => {
       roleName,
     } = req.body;
     if (
-      !firstName ||
-      !lastName ||
-      !gender ||
-      !dob ||
-      !address ||
-      !address_details ||
-      !phone ||
-      !email ||
-      !password ||
-      !roleName
+      firstName === undefined ||
+      lastName === undefined ||
+      gender === undefined ||
+      dob === undefined ||
+      address === undefined ||
+      address_details === undefined ||
+      phone === undefined ||
+      email === undefined ||
+      password === undefined ||
+      roleName === undefined
     ) {
       res.status(400);
       throw new Error("All field not be empty!");
@@ -44,10 +44,12 @@ const registerUser = asyncHandler(async (req, res, next) => {
       throw new Error("User has already registered with Email!");
     }
 
-    const userPhoneAvailable = await User.findOne({ phone });
-    if (userPhoneAvailable) {
-      res.status(400);
-      throw new Error("User has already registered with Phone Number!");
+    if (phone !== "") {
+      const userPhoneAvailable = await User.findOne({ phone });
+      if (userPhoneAvailable) {
+        res.status(400);
+        throw new Error("User has already registered with Phone Number!");
+      }
     }
 
     const date = new Date(dob);
@@ -59,7 +61,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
       firstName,
       lastName,
       gender,
-      dob: date,
+      dob: dob === "" ? dob : date,
       address,
       address_details,
       phone,
@@ -481,67 +483,47 @@ const deleteUsers = asyncHandler(async (req, res, next) => {
 });
 
 //@desc update Role of user to Accommodation
-//@route GET /api/users/upRoleAccommodation/:id
+//@route GET /api/users/upRole
 //@access private
-const updateRoleToAccommodation = asyncHandler(async (req, res, next) => {
+const upgradeRole = asyncHandler(async (req, res, next) => {
   try {
-    const user_id = req.params.id;
-    const user = await User.findById(user_id);
+    const { user_id, roleName } = req.body;
+    if (!user_id || !roleName) {
+      res.status(400);
+      throw new Error("All fields are required");
+    }
+    const user = await User.findById(user_id).populate("role_id");
     if (!user) {
       res.status(404);
       throw new Error("User not Found!");
     }
+    if (user.role_id.roleName !== "Customer") {
+      res.status(403);
+      throw new Error("Only Customer can be upgrade role!");
+    }
+    const role = await Role.findOne({ roleName });
+    if (!role) {
+      res.status(404);
+      throw new Error("Role not Found!");
+    }
     if (req.user.roleName !== "Admin") {
       res.status(403);
-      throw new Error("Only Admin can update role of User to Accommodation");
+      throw new Error("Only Admin can upgrade role of User");
     }
-    const updateRole = await User.findByIdAndUpdate(
+    const upgradeRole = await User.findByIdAndUpdate(
       user_id,
       {
-        role_id: "63e4736f62bf96d8df480f5a",
+        role_id: role._id.toString(),
       },
       { new: true }
     );
-    if (!updateRole) {
+    if (!upgradeRole) {
       res.status(500);
       throw new Error(
         "Something when wrong in update Role User to Accommodation!"
       );
     }
-    res.status(200).json(updateRole);
-  } catch (error) {
-    res
-      .status(res.statusCode || 500)
-      .send(error.message || "Internal Server Error");
-  }
-});
-//@desc update Role of user to Owner
-//@route GET /api/users/upRoleOwner/:id
-//@access private
-const updateRoleToOwner = asyncHandler(async (req, res, next) => {
-  try {
-    const user_id = req.params.id;
-    const user = await User.findById(user_id);
-    if (!user) {
-      res.status(404);
-      throw new Error("User not Found!");
-    }
-    if (req.user.roleName !== "Admin") {
-      res.status(403);
-      throw new Error("Only Admin can update role of User to Owner");
-    }
-    const updateRole = await User.findByIdAndUpdate(
-      user_id,
-      {
-        role_id: "648451b57a77eb17c8884d88",
-      },
-      { new: true }
-    );
-    if (!updateRole) {
-      res.status(500);
-      throw new Error("Something when wrong in update Role User to Owner!");
-    }
-    res.status(200).json(updateRole);
+    res.status(200).json(upgradeRole);
   } catch (error) {
     res
       .status(res.statusCode || 500)
@@ -878,8 +860,7 @@ module.exports = {
   searchUserByName,
   currentUser,
   blockUsers,
-  updateRoleToAccommodation,
-  updateRoleToOwner,
+  upgradeRole,
   checkOldPassword,
   changePassword,
   updateAvatarUser,

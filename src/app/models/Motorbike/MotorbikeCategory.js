@@ -8,7 +8,7 @@ const MotorbikeCategorySchema = mongoose.Schema(
     },
   },
   {
-    timestamp: true,
+    timestamps: true,
   }
 );
 

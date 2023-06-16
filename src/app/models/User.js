@@ -45,6 +45,7 @@ const userSchema = mongoose.Schema(
     },
     profit: {
       type: Number,
+      default: 0,
     },
     role_id: {
       type: mongoose.Schema.Types.ObjectId,
