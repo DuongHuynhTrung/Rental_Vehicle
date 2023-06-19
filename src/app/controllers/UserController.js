@@ -692,7 +692,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
               Verify Your Email
             </p>
             <h1 style="color:#000;display:inline-block;font-family:HelveticaNeue-Medium,Helvetica,Arial,sans-serif;font-size:20px;font-weight:500;line-height:24px;margin-bottom:0;margin-top:0;text-align:center">
-              Enter the following code to finish create account
+              Enter the following code to finish reset your password
             </h1>
             <table
               style="background:rgba(0,0,0,.05);border-radius:4px;margin:16px auto 14px;vertical-align:middle;width:280px"
@@ -851,6 +851,118 @@ const resetPassword = asyncHandler(async (req, res, next) => {
   }
 });
 
+const sendMailWhenRegisterOwner = asyncHandler(async (req, res) => {
+  try {
+    const { username, phone, address, vehicleType } = req.body;
+    if (!username || !phone || !address || !vehicleType) {
+      res.status(404);
+      throw new Error("All fields are required");
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true, // use SSL
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.PASSWORD,
+      },
+    });
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: process.env.EMAIL,
+      subject: "User register to become owner of our system",
+      html: `
+      <body style="background-color:#fff;font-family:-apple-system,BlinkMacSystemFont,Segoe
+    UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif">
+    <div style="width:50vw; margin: 0 auto">
+        <img src="https://suckhoedoisong.qltns.mediacdn.vn/Images/bichvan/2018/10/09/day_lai_xe_o_to.jpg"
+        style="width: 100%;height:120px;object-fit: cover;"
+        >
+        <table style="padding:0 40px" align="center" border="0" cellPadding="0" cellSpacing="0" role="presentation"
+            width="100%">
+            <tbody>
+                <tr>
+                    <td>
+                        <hr
+                            style="width:100%;border:none;border-top:1px solid black;border-color:black;margin:20px 0" />
+                        <p style="font-size:14px;line-height:22px;margin:16px 0;color:#3c4043;">
+                            Hello 
+                            <a style="font-size:16px;line-height:22px;margin:16px 0;font-weight: bold;">Driveconn,</a>
+                        </p>
+                        <p style="font-size:14px;line-height:22px;margin:16px 0;color:#3c4043;text-align: justify">
+                            My name is
+                            <a style="color:#004dcf;text-decoration:none;font-size:14px;line-height:22px">
+                                ${username}.
+                            </a>
+                            After reading the regulations on your side, I would like to become a partner to list my
+                            <a style="color:#004dcf;text-decoration:none;font-size:14px;line-height:22px">
+                                ${vehicleType}
+                            </a>
+                            for rent through your platform.
+                        </p>
+
+                        <p style="font-size:14px;line-height:22px;margin:16px 0;margin-bottom:10px;color:#3c4043">
+                            Here is my contact information:
+                        <div style="margin-left: 25px;">
+                            <p style="font-size:14px;line-height:22px;margin:10px 0;color:#3c4043">Full name:
+                                <a style="color:#004dcf;text-decoration:none;font-size:14px;line-height:22px">
+                                    ${username}
+                                </a>
+                            </p>
+                            <p style="font-size:14px;line-height:22px;margin:10px 0;color:#3c4043">Phone number:
+                                <a style="color:#004dcf;text-decoration:none;font-size:14px;line-height:22px">
+                                    ${phone}
+                                </a>
+                            </p>
+                            <p style="font-size:14px;line-height:22px;margin:10px 0;color:#3c4043">Address:
+                                <a style="color:#004dcf;text-decoration:none;font-size:14px;line-height:22px">
+                                    ${address}
+                                </a>
+                            </p>
+                        </div>
+                        </p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <table style="padding:0 40px" align="center" border="0" cellPadding="0" cellSpacing="0" role="presentation"
+            width="100%">
+            <tbody>
+                <tr>
+                    <td>
+                        <p style="font-size:14px;line-height:22px;margin:16px 0;color:#3c4043;text-align: justify">
+                            Please contact me as soon as possible so that we can discuss further.
+                        </p>
+                        <p style="font-size:14px;line-height:22px;margin:16px 0;color:#3c4043">Thank you,</p>
+                        <p style="font-size:16px;line-height:22px;margin:16px 0;color:#3c4043">${username}</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+      `,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log(`Email sent: ${info.response}`);
+      }
+    });
+
+    res.status(200).json("Send email to administrator successfully");
+  } catch (error) {
+    res
+      .status(res.statusCode || 500)
+      .send(error.message || "Internal Server Error");
+  }
+});
+
 module.exports = {
   registerUser,
   getUsers,
@@ -869,4 +981,5 @@ module.exports = {
   forgotPasswordSMS,
   sendOTPWhenRegister,
   verifyOTPWhenRegister,
+  sendMailWhenRegisterOwner,
 };

@@ -20,6 +20,7 @@ const {
   forgotPasswordSMS,
   sendOTPWhenRegister,
   verifyOTPWhenRegister,
+  sendMailWhenRegisterOwner,
 } = require("../app/controllers/UserController");
 const {
   getDrivingLicenseOfUser,
@@ -264,6 +265,8 @@ userRouter.post("/forgotPassword", forgotPassword);
  *
  */
 userRouter.post("/resetPassword", resetPassword);
+
+userRouter.route("/sendMailWhenRegisterOwner").post(sendMailWhenRegisterOwner);
 
 userRouter.use(validateToken);
 
