@@ -43,7 +43,6 @@ const getAllVehicles = asyncHandler(async (req, res, next) => {
 const getVehicleByLicensePlate = asyncHandler(async (req, res, next) => {
   try {
     const licensePlate = req.params.licensePlate;
-    console.log(licensePlate);
     if (!licensePlate) {
       res.status(404);
       throw new Error(`Invalid licensePlate`);

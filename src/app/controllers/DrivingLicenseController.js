@@ -6,12 +6,11 @@ const DrivingLicense = require("../models/DrivingLicense");
 //@access private
 const getDrivingLicenseOfUser = asyncHandler(async (req, res, next) => {
   try {
-    const user_id = req.body.user_id;
+    const user_id = req.params.user_id;
     if (!user_id) {
       res.status(404);
       throw new Error("user_id is required");
     }
-    console.log(user_id);
     const drivingLicense = await DrivingLicense.find({
       user_id,
     }).populate("user_id");

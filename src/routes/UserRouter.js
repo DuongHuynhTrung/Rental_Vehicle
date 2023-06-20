@@ -486,6 +486,37 @@ userRouter.put("/avatar", upload.single("image"), updateAvatarUser);
  */
 
 //Router for CRUD Driving License
+
+/**
+ * @swagger
+ * /api/users/drivingLicense:
+ *  get:
+ *    tags:
+ *      - Driving License
+ *    summary: Retrieve a driving License of user
+ *    description: Retrieve a driving License of user
+ *    responses:
+ *      200:
+ *        description: Retrieve a driving License of user
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                description:
+ *                  type: string
+ *                  example: Successfully fetched data!
+ *                data:
+ *                  type: array
+ *                  items:
+ *                    $ref: '#/components/schemas/Driving_License'
+ *      404:
+ *        description: User doesn't register Driving License!
+ *
+ */
+
+userRouter.route("/drivingLicense/:user_id").get(getDrivingLicenseOfUser);
+
 userRouter
   .route("/drivingLicense")
   .all((req, res, next) => {
@@ -493,36 +524,6 @@ userRouter
     res.setHeader("Content-Type", "json/plain");
     next();
   })
-
-  /**
-   * @swagger
-   * /api/users/drivingLicense:
-   *  get:
-   *    tags:
-   *      - Driving License
-   *    summary: Retrieve a driving License of user
-   *    description: Retrieve a driving License of user
-   *    responses:
-   *      200:
-   *        description: Retrieve a driving License of user
-   *        content:
-   *          application/json:
-   *            schema:
-   *              type: object
-   *              properties:
-   *                description:
-   *                  type: string
-   *                  example: Successfully fetched data!
-   *                data:
-   *                  type: array
-   *                  items:
-   *                    $ref: '#/components/schemas/Driving_License'
-   *      404:
-   *        description: User doesn't register Driving License!
-   *
-   */
-
-  .get(getDrivingLicenseOfUser)
 
   /**
    * @swagger
