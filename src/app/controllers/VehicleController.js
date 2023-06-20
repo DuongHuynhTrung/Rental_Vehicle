@@ -2,20 +2,51 @@ const asyncHandler = require("express-async-handler");
 const Vehicle = require("../models/Vehicle");
 const XLSX = require("xlsx");
 const User = require("../models/User");
+const Car = require("../models/Car/Car");
+const Motorbike = require("../models/Motorbike/Motorbike");
 
 //@desc Get all Vehicles Of User
 //@route GET /api/vehicles
 //@access private
 const getVehiclesOfUser = asyncHandler(async (req, res, next) => {
   try {
-    const vehicles = await Vehicle.find({ user_id: req.user.id })
-      .populate("user_id")
+    //Get Cars of User
+    const cars = await Car.find()
+      .populate({
+        path: "vehicle_id",
+        populate: {
+          path: "user_id",
+          model: "User",
+        },
+      })
+      .populate("autoMaker_id")
+      .populate("model_id")
+      .populate("category_id")
       .exec();
-    if (vehicles.length === 0) {
+    const carItems = cars.filter(
+      (car) => car.vehicle_id.user_id._id.toString() === req.user.id
+    );
+    // Get Motorbikes of User
+    const motorbikes = await Motorbike.find()
+      .populate({
+        path: "vehicle_id",
+        populate: {
+          path: "user_id",
+          model: "User",
+        },
+      })
+      .populate("autoMaker_id")
+      .populate("model_id")
+      .populate("category_id")
+      .exec();
+    const motorbikeItems = motorbikes.filter(
+      (motorbike) => motorbike.vehicle_id.user_id._id.toString() === req.user.id
+    );
+    if (carItems.length === 0 && motorbikeItems.length === 0) {
       res.status(404);
       throw new Error("User don't register any Vehicle!");
     }
-    res.status(200).json(vehicles);
+    res.status(200).json([...carItems, ...motorbikeItems]);
   } catch (error) {
     res.status(res.statusCode || 500).send(error.message);
   }
@@ -26,12 +57,35 @@ const getVehiclesOfUser = asyncHandler(async (req, res, next) => {
 //@access private
 const getAllVehicles = asyncHandler(async (req, res, next) => {
   try {
-    const vehicles = await Vehicle.find().populate("user_id").exec();
-    if (vehicles.length === 0) {
+    const motorbikes = await Motorbike.find()
+      .populate("autoMaker_id")
+      .populate("model_id")
+      .populate("category_id")
+      .populate({
+        path: "vehicle_id",
+        populate: {
+          path: "user_id",
+          model: "User",
+        },
+      })
+      .exec();
+    const cars = await Car.find()
+      .populate({
+        path: "vehicle_id",
+        populate: {
+          path: "user_id",
+          model: "User",
+        },
+      })
+      .populate("autoMaker_id")
+      .populate("model_id")
+      .populate("category_id")
+      .exec();
+    if (cars.length === 0 && motorbikes.length === 0) {
       res.status(404);
       throw new Error("Website don't have any Vehicle!");
     }
-    res.status(200).json(vehicles);
+    res.status(200).json([...cars, ...motorbikes]);
   } catch (error) {
     res.status(res.statusCode || 500).send(error.message);
   }

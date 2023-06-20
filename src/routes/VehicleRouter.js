@@ -79,6 +79,36 @@ vehicleRouter.route("/home").get(getAllVehicles);
 
 /**
  * @swagger
+ * /api/vehicles:
+ *  get:
+ *    tags:
+ *      - vehicles
+ *    summary: Retrieve a list vehicles of User
+ *    description: Retrieve a list vehicles of User from vehicle table
+ *    responses:
+ *      200:
+ *        description: A list vehicles of User.
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                description:
+ *                  type: string
+ *                  example: Successfully fetched all data!
+ *                data:
+ *                  type: array
+ *                  items:
+ *                    $ref: '#/components/schemas/vehicle'
+ *      404:
+ *        description: User don't register any vehicle!
+ *
+ */
+
+vehicleRouter.route("/user").get(validateToken, getVehiclesOfUser);
+
+/**
+ * @swagger
  * /api/vehicles/{licensePlate}:
  *  get:
  *    tags:
@@ -112,45 +142,4 @@ vehicleRouter.route("/home").get(getAllVehicles);
  */
 
 vehicleRouter.route("/:licensePlate").get(getVehicleByLicensePlate);
-
-vehicleRouter.use(validateToken);
-
-vehicleRouter
-  .route("/")
-  .all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader("Content-Type", "json/plain");
-    next();
-  })
-
-  /**
-   * @swagger
-   * /api/vehicles:
-   *  get:
-   *    tags:
-   *      - vehicles
-   *    summary: Retrieve a list vehicles of User
-   *    description: Retrieve a list vehicles of User from vehicle table
-   *    responses:
-   *      200:
-   *        description: A list vehicles of User.
-   *        content:
-   *          application/json:
-   *            schema:
-   *              type: object
-   *              properties:
-   *                description:
-   *                  type: string
-   *                  example: Successfully fetched all data!
-   *                data:
-   *                  type: array
-   *                  items:
-   *                    $ref: '#/components/schemas/vehicle'
-   *      404:
-   *        description: User don't register any vehicle!
-   *
-   */
-
-  .get(getVehiclesOfUser);
-
 module.exports = vehicleRouter;
