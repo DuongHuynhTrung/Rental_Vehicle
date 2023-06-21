@@ -100,7 +100,7 @@ const loginGoogle = asyncHandler(async (req, res, next) => {
       res.status(400);
       throw new Error("All fields are required");
     }
-    const isExist = await User.findOne({ email });
+    const isExist = await User.findOne({ email }).populate("role_id");
     const role = await Role.findOne({ roleName: "Customer" });
     if (isExist) {
       const accessToken = jwt.sign(
@@ -109,8 +109,8 @@ const loginGoogle = asyncHandler(async (req, res, next) => {
             firstName: isExist.firstName,
             lastName: isExist.lastName,
             email: isExist.email,
-            roleName: role.roleName,
-            role_id: isExist.role_id,
+            roleName: isExist.role_id.roleName,
+            role_id: isExist.role_id._id,
             imgURL: isExist.imgURL,
             id: isExist.id,
           },
@@ -124,8 +124,8 @@ const loginGoogle = asyncHandler(async (req, res, next) => {
             firstName: isExist.firstName,
             lastName: isExist.lastName,
             email: isExist.email,
-            roleName: role.roleName,
-            role_id: isExist.role_id,
+            roleName: isExist.role_id.roleName,
+            role_id: isExist.role_id._id,
             imgURL: isExist.imgURL,
             id: isExist.id,
           },
