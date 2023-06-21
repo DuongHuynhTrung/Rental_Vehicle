@@ -21,7 +21,9 @@ const getAllBookingsOfHotelier = asyncHandler(async (req, res, next) => {
     let bookings = [];
     vehicle.forEach((vehicle) => {
       allBookings.forEach((booking) =>
-        booking.vehicle_id._id === vehicle._id ? bookings.push(booking) : null
+        booking.vehicle_id._id.toString() === vehicle._id.toString()
+          ? bookings.push(booking)
+          : null
       );
     });
     if (bookings.length === 0) {

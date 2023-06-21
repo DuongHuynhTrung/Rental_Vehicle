@@ -142,4 +142,5 @@ vehicleRouter.route("/user").get(validateToken, getVehiclesOfUser);
  */
 
 vehicleRouter.route("/:licensePlate").get(getVehicleByLicensePlate);
+
 module.exports = vehicleRouter;
