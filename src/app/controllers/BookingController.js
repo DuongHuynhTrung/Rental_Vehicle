@@ -768,7 +768,7 @@ const changeStatusBooking = asyncHandler(async (req, res, next) => {
         const isTransferred = await Booking.findByIdAndUpdate(
           bookingId,
           {
-            isTransferred: true,
+            bookingStatus: "Done",
           },
           {
             new: true,
