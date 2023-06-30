@@ -872,7 +872,7 @@ const sendMailWhenRegisterOwner = asyncHandler(async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL,
       to: process.env.EMAIL,
-      subject: "User register to become owner of our system",
+      subject: "Become a vehicle owner",
       html: `
       <body style="background-color:#fff;font-family:-apple-system,BlinkMacSystemFont,Segoe
     UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif">

@@ -84,7 +84,7 @@ const voucherRouter = require("./src/routes/VoucherRouter");
 const categoryRouter = require("./src/routes/CategoryRouter");
 const userRouter = require("./src/routes/UserRouter");
 const authRouter = require("./src/routes/AuthRouter");
-// const filterRouter = require("./src/routes/FilterRouter");
+const filterRouter = require("./src/routes/FilterRouter");
 const bookingRouter = require("./src/routes/BookingRouter");
 
 //Use Session
@@ -111,7 +111,7 @@ app.use("/api/models", modelRouter);
 app.use("/api/categories", categoryRouter);
 app.use("/api/vehicles", vehicleRouter);
 app.use("/api/auth", authRouter);
-// app.use("/api/filters", filterRouter);
+app.use("/api/filters", filterRouter);
 app.use("/api/bookings", bookingRouter);
 app.use("/api/paypal", paypalRouter);
 app.use("/api/vouchers", voucherRouter);
