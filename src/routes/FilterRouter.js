@@ -11,6 +11,8 @@ const {
   getVehicleByAutoMaker,
   getVehicleByModel,
   getCarsByTransmission,
+  filterByAddress,
+  getVehicleByAddress,
 } = require("../app/controllers/FilterController");
 
 /**
@@ -125,6 +127,8 @@ filterRouter.route("/vehicles/model").get(getVehicleByModel);
 
 filterRouter.route("/cars/transmission").get(getCarsByTransmission);
 
+filterRouter.route("/vehicles/address").get(getVehicleByAddress);
+
 // /**
 //  * @swagger
 //  * /api/filters/types:
@@ -148,6 +152,7 @@ filterRouter.route("/cars/transmission").get(getCarsByTransmission);
 //  *          application/json:
 //  *            schema:
 //  *              type: object
+
 //  *              properties:
 //  *                description:
 //  *                  type: string

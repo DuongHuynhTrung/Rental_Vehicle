@@ -4,6 +4,10 @@ const Motorbike = require("../models/Motorbike/Motorbike");
 const CarCategory = require("../models/Car/CarCategory");
 const MotorbikeCategory = require("../models/Motorbike/MotorbikeCategory");
 const { min } = require("moment");
+const { default: axios } = require("axios");
+const {
+  CompositionHookPage,
+} = require("twilio/lib/rest/video/v1/compositionHook");
 
 //@desc Get drivingLicense Of User
 //@route GET /vehicleType
@@ -11,12 +15,10 @@ const { min } = require("moment");
 const getVehiclesHaveInsurance = asyncHandler(async (req, res, next) => {
   const vehicleType = req.query.vehicleType;
   if (!vehicleType) {
-    res.status(400);
-    throw new Error("Vehicle type is required");
+    res.status(400).send("Vehicle type is required");
   }
   if (vehicleType !== "Motorbike" && vehicleType !== "Car") {
-    res.status(400);
-    throw new Error("Vehicle type Invalid");
+    res.status(400).send("Vehicle type Invalid");
   }
   if (vehicleType === "Car") {
     try {
@@ -74,12 +76,10 @@ const getVehiclesHaveInsurance = asyncHandler(async (req, res, next) => {
 const getVehiclesNoMortgage = asyncHandler(async (req, res, next) => {
   const vehicleType = req.query.vehicleType;
   if (!vehicleType) {
-    res.status(400);
-    throw new Error("Vehicle type is required");
+    res.status(400).send("Vehicle type is required");
   }
   if (vehicleType !== "Motorbike" && vehicleType !== "Car") {
-    res.status(400);
-    throw new Error("Vehicle type Invalid");
+    res.status(400).send("Vehicle type Invalid");
   }
   if (vehicleType === "Car") {
     try {
@@ -137,12 +137,10 @@ const getVehiclesNoMortgage = asyncHandler(async (req, res, next) => {
 const getVehiclesByPrice = asyncHandler(async (req, res) => {
   const vehicleType = req.query.vehicleType;
   if (!vehicleType) {
-    res.status(400);
-    throw new Error("Vehicle type is required");
+    res.status(400).send("Vehicle type is required");
   }
   if (vehicleType !== "Motorbike" && vehicleType !== "Car") {
-    res.status(400);
-    throw new Error("Vehicle type Invalid");
+    res.status(400).send("Vehicle type Invalid");
   }
   let maxPrice = req.query.maxPrice;
   let minPrice = req.query.minPrice;
@@ -234,12 +232,10 @@ const getVehiclesByPrice = asyncHandler(async (req, res) => {
 const getVehicleByCategory = asyncHandler(async (req, res) => {
   const vehicleType = req.query.vehicleType;
   if (!vehicleType) {
-    res.status(400);
-    throw new Error("Vehicle type is required");
+    res.status(400).send("Vehicle type is required");
   }
   if (vehicleType !== "Motorbike" && vehicleType !== "Car") {
-    res.status(400);
-    throw new Error("Vehicle type Invalid");
+    res.status(400).send("Vehicle type Invalid");
   }
   if (vehicleType === "Car") {
     try {
@@ -307,12 +303,10 @@ const getVehicleByCategory = asyncHandler(async (req, res) => {
 const getVehicleByAutoMaker = asyncHandler(async (req, res) => {
   const vehicleType = req.query.vehicleType;
   if (!vehicleType) {
-    res.status(400);
-    throw new Error("Vehicle type is required");
+    res.status(400).send("Vehicle type is required");
   }
   if (vehicleType !== "Motorbike" && vehicleType !== "Car") {
-    res.status(400);
-    throw new Error("Vehicle type Invalid");
+    res.status(400).send("Vehicle type Invalid");
   }
   if (vehicleType === "Car") {
     try {
@@ -380,12 +374,10 @@ const getVehicleByAutoMaker = asyncHandler(async (req, res) => {
 const getVehicleByModel = asyncHandler(async (req, res) => {
   const vehicleType = req.query.vehicleType;
   if (!vehicleType) {
-    res.status(400);
-    throw new Error("Vehicle type is required");
+    res.status(400).send("Vehicle type is required");
   }
   if (vehicleType !== "Motorbike" && vehicleType !== "Car") {
-    res.status(400);
-    throw new Error("Vehicle type Invalid");
+    res.status(400).send("Vehicle type Invalid");
   }
   if (vehicleType === "Car") {
     try {
@@ -448,6 +440,77 @@ const getVehicleByModel = asyncHandler(async (req, res) => {
   }
 });
 
+const getVehicleByAddress = asyncHandler(async (req, res) => {
+  const vehicleType = req.query.vehicleType;
+  if (!vehicleType) {
+    res.status(400).send("Vehicle type is required");
+  }
+  if (vehicleType !== "Motorbike" && vehicleType !== "Car") {
+    res.status(400).send("Vehicle type Invalid");
+  }
+  if (vehicleType === "Car") {
+    try {
+      const address = req.query.address;
+      if (!address) {
+        res.status(400);
+        throw new Error("Address is required");
+      }
+      const cars = await Car.find()
+        .populate({
+          path: "vehicle_id",
+          populate: {
+            path: "user_id",
+            model: "User",
+          },
+        })
+        .populate("autoMaker_id")
+        .populate("model_id")
+        .populate("category_id")
+        .exec();
+      const carsWithAddress = cars.filter(
+        (car) => car.vehicle_id.location === address
+      );
+      if (carsWithAddress.length <= 0) {
+        res.status(404);
+        throw new Error(`Have no Car with Address: ${address}`);
+      }
+      res.status(200).json(carsWithAddress);
+    } catch (error) {
+      res.status(res.statusCode || 500).send(error.message);
+    }
+  } else {
+    try {
+      const address = req.query.address;
+      if (!address) {
+        res.status(400);
+        throw new Error("Address is required");
+      }
+      const motorbikes = await Motorbike.find()
+        .populate({
+          path: "vehicle_id",
+          populate: {
+            path: "user_id",
+            model: "User",
+          },
+        })
+        .populate("autoMaker_id")
+        .populate("model_id")
+        .populate("category_id")
+        .exec();
+      const motorbikesWithAddress = motorbikes.filter(
+        (motorbike) => motorbike.vehicle_id.location === address
+      );
+      if (motorbikesWithAddress.length <= 0) {
+        res.status(404);
+        throw new Error(`Have no motorbike with Address: ${address}`);
+      }
+      res.status(200).json(motorbikesWithAddress);
+    } catch (error) {
+      res.status(res.statusCode || 500).send(error.message);
+    }
+  }
+});
+
 const getCarsByTransmission = asyncHandler(async (req, res) => {
   try {
     const transmission = req.query.transmission;
@@ -488,5 +551,6 @@ module.exports = {
   getVehicleByAutoMaker,
   getVehicleByModel,
   getCarsByTransmission,
+  getVehicleByAddress,
   // getVehicleByTypes,
 };
