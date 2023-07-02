@@ -212,23 +212,6 @@ const getVehiclesByPrice = asyncHandler(async (req, res) => {
   }
 });
 
-// const getVehicleByTypes = asyncHandler(async (req, res) => {
-//   const types = req.query.types.split(",");
-//   VehicleDetail.find({ vehicleType: { $in: types } }, (err, vehicles) => {
-//     if (err) {
-//       res.status(500);
-//       throw new Error("Error in filtering vehicle by type");
-//     }
-//     // If there are no products, send a 404 status
-//     if (!vehicles || vehicles.length === 0) {
-//       res.status(404);
-//       throw new Error("No Vehicle found");
-//     }
-//     // If there are products, send them as a JSON response
-//     res.status(200).json(vehicles);
-//   });
-// });
-
 const getVehicleByCategory = asyncHandler(async (req, res) => {
   const vehicleType = req.query.vehicleType;
   if (!vehicleType) {
@@ -511,6 +494,75 @@ const getVehicleByAddress = asyncHandler(async (req, res) => {
   }
 });
 
+const getVehicleByFuel = asyncHandler(async (req, res) => {
+  const vehicleType = req.query.vehicleType;
+  if (!vehicleType) {
+    res.status(400).send("Vehicle type is required");
+  }
+  if (vehicleType !== "Motorbike" && vehicleType !== "Car") {
+    res.status(400).send("Vehicle type Invalid");
+  }
+  if (vehicleType === "Car") {
+    try {
+      const fuel = req.query.fuel;
+      if (!fuel) {
+        res.status(400);
+        throw new Error("Fuel is required");
+      }
+      const cars = await Car.find()
+        .populate({
+          path: "vehicle_id",
+          populate: {
+            path: "user_id",
+            model: "User",
+          },
+        })
+        .populate("autoMaker_id")
+        .populate("model_id")
+        .populate("category_id")
+        .exec();
+      const carsWithFuel = cars.filter((car) => car.fuel === fuel);
+      if (carsWithFuel.length <= 0) {
+        res.status(404);
+        throw new Error(`Have no Car with Fuel: ${fuel}`);
+      }
+      res.status(200).json(carsWithFuel);
+    } catch (error) {
+      res.status(res.statusCode || 500).send(error.message);
+    }
+  } else {
+    try {
+      const fuel = req.query.fuel;
+      if (!fuel) {
+        res.status(400);
+        throw new Error("Fuel is required");
+      }
+      const motorbikes = await Motorbike.find()
+        .populate({
+          path: "vehicle_id",
+          populate: {
+            path: "user_id",
+            model: "User",
+          },
+        })
+        .populate("autoMaker_id")
+        .populate("model_id")
+        .populate("category_id")
+        .exec();
+      const motorbikesWithFuel = motorbikes.filter(
+        (motorbike) => motorbike.fuel === fuel
+      );
+      if (motorbikesWithFuel.length <= 0) {
+        res.status(404);
+        throw new Error(`Have no Motorbike with Fuel: ${fuel}`);
+      }
+      res.status(200).json(motorbikesWithFuel);
+    } catch (error) {
+      res.status(res.statusCode || 500).send(error.message);
+    }
+  }
+});
+
 const getCarsByTransmission = asyncHandler(async (req, res) => {
   try {
     const transmission = req.query.transmission;
@@ -552,5 +604,5 @@ module.exports = {
   getVehicleByModel,
   getCarsByTransmission,
   getVehicleByAddress,
-  // getVehicleByTypes,
+  getVehicleByFuel,
 };

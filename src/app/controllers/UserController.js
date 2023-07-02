@@ -3,6 +3,7 @@ const User = require("../models/User");
 const Role = require("../models/Role");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const twilio = require("twilio");
 const moment = require("moment/moment");
 
@@ -69,12 +70,50 @@ const registerUser = asyncHandler(async (req, res, next) => {
       password: hashedPassword,
       role_id: role._id.toString(),
     });
-    if (user) {
-      res.status(201).json(user);
-    } else {
+    if (!user) {
       res.status(400);
       throw new Error("User data is not Valid!");
     }
+    const accessToken = jwt.sign(
+      {
+        user: {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          roleName: role.roleName,
+          role_id: user.role_id,
+          imgURL: user.imgURL,
+          id: user.id,
+        },
+      },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    const refreshToken = jwt.sign(
+      {
+        user: {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          roleName: role.roleName,
+          role_id: user.role_id,
+          imgURL: user.imgURL,
+          id: user.id,
+        },
+      },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: "7d" }
+    );
+    // Create secure cookie with refresh token
+    res.cookie("jwt", refreshToken, {
+      httpOnly: true, //accessible only by web server
+      secure: true, //https
+      sameSite: "None", //cross-site cookie
+      maxAge: 7 * 24 * 60 * 60 * 1000, //cookie expiry: set to match rT
+    });
+
+    res.status(200).json({ accessToken });
   } catch (error) {
     res
       .status(res.statusCode || 500)

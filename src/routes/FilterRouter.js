@@ -5,14 +5,13 @@ filterRouter.use(bodyParser.json());
 const {
   getVehiclesHaveInsurance,
   getVehiclesByPrice,
-  getVehicleByTypes,
   getVehiclesNoMortgage,
   getVehicleByCategory,
   getVehicleByAutoMaker,
   getVehicleByModel,
   getCarsByTransmission,
-  filterByAddress,
   getVehicleByAddress,
+  getVehicleByFuel,
 } = require("../app/controllers/FilterController");
 
 /**
@@ -129,44 +128,6 @@ filterRouter.route("/cars/transmission").get(getCarsByTransmission);
 
 filterRouter.route("/vehicles/address").get(getVehicleByAddress);
 
-// /**
-//  * @swagger
-//  * /api/filters/types:
-//  *  get:
-//  *    tags:
-//  *      - Filters
-//  *    summary: Filter vehicles by multiple types
-//  *    description: Retrieve a list of Vehicle with types in the list
-//  *    parameters:
-//  *      - name: types
-//  *        in: query
-//  *        description: Types of vehicle to search for
-//  *        Required: true
-//  *        schema:
-//  *          type: string
-//  *        example: Xe tay côn,4 chỗ
-//  *    responses:
-//  *      200:
-//  *        description: A list of vehicles.
-//  *        content:
-//  *          application/json:
-//  *            schema:
-//  *              type: object
-
-//  *              properties:
-//  *                description:
-//  *                  type: string
-//  *                  example: Successfully fetched all data!
-//  *                data:
-//  *                  type: array
-//  *                  items:
-//  *                    $ref: '#/components/schemas/Vehicle'
-//  *      400:
-//  *        description: No Vehicle found
-//  *      500:
-//  *        description: Error in filtering vehicle by type
-//  *
-//  */
-// filterRouter.route("/types").get(getVehicleByTypes);
+filterRouter.route("/vehicles/fuel").get(getVehicleByFuel);
 
 module.exports = filterRouter;
