@@ -28,6 +28,7 @@ const {
   updateDrivingLicense,
   deleteDrivingLicense,
   confirmedDrivingLicense,
+  getAllDrivingLicenseForAdmin,
 } = require("../app/controllers/DrivingLicenseController");
 const multer = require("multer");
 const {
@@ -486,6 +487,8 @@ userRouter.put("/avatar", upload.single("image"), updateAvatarUser);
  */
 
 //Router for CRUD Driving License
+
+userRouter.route("/drivingLicense/admin").get(getAllDrivingLicenseForAdmin);
 
 /**
  * @swagger

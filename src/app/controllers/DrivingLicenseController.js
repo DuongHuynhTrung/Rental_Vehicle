@@ -4,6 +4,29 @@ const DrivingLicense = require("../models/DrivingLicense");
 //@desc Get drivingLicense Of User
 //@route GET /api/users/drivingLicense
 //@access private
+const getAllDrivingLicenseForAdmin = asyncHandler(async (req, res, next) => {
+  try {
+    const roleName = req.user.roleName;
+    if (roleName !== "Admin") {
+      res.status(403);
+      throw new Error("You do not have permission to get all driving licenses");
+    }
+    const drivingLicense = await DrivingLicense.find().populate("user_id");
+    if (!drivingLicense) {
+      res.status(404);
+      throw new Error("Website don't have any Driving license!");
+    }
+    res.status(200).json(drivingLicense);
+  } catch (error) {
+    res
+      .status(res.statusCode || 500)
+      .send(error.message || "Internal Server Error");
+  }
+});
+
+//@desc Get drivingLicense Of User
+//@route GET /api/users/drivingLicense
+//@access private
 const getDrivingLicenseOfUser = asyncHandler(async (req, res, next) => {
   try {
     const user_id = req.params.user_id;
@@ -182,6 +205,7 @@ const confirmedDrivingLicense = asyncHandler(async (req, res, next) => {
 });
 
 module.exports = {
+  getAllDrivingLicenseForAdmin,
   getDrivingLicenseOfUser,
   registerDrivingLicense,
   updateDrivingLicense,
