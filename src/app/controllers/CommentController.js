@@ -181,10 +181,82 @@ const createComment = asyncHandler(async (req, res) => {
   }
 });
 
-const getCommentByUserId = asyncHandler(async (req, res) => {});
+const getCommentByUserId = asyncHandler(async (req, res) => {
+  try {
+    const { user_id } = req.body;
+    if (!user_id) {
+      res.status(400);
+      throw new Error("Invalid user_id");
+    }
+    const user = await User.findById(user_id).populate("role_id");
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
+    }
+    const roleName = user.role_id.roleName;
+    if (roleName === "Customer") {
+      const customerComment = await Comment.find({
+        customer_id: user._id.toString(),
+      });
+      if (!customerComment) {
+        res.status(500);
+        throw new Error("Something went wrong when fetching customer comment");
+      }
+      if (customerComment.length === 0) {
+        res.status(404);
+        throw new Error("Customer don't have any comments");
+      }
+      res.status(200).json(customerComment);
+    } else if (roleName === "Owner") {
+      const ownerComment = await Comment.find({
+        owner_id: user._id.toString(),
+      });
+      if (!ownerComment) {
+        res.status(500);
+        throw new Error("Something went wrong when fetching owner comment");
+      }
+      if (ownerComment.length === 0) {
+        res.status(404);
+        throw new Error("Owner don't have any comments");
+      }
+      res.status(200).json(ownerComment);
+    } else {
+      res.status(403);
+      throw new Error(`Invalid role name: ${roleName}`);
+    }
+  } catch (error) {
+    res
+      .status(res.statusCode || 500)
+      .send(error.message || "Internal Server Error");
+  }
+});
 
-const updateComment = asyncHandler(async (req, res) => {});
+const getCommentByVehicleId = asyncHandler(async (req, res) => {
+  try {
+    const { vehicle_id } = req.body;
+    if (!vehicle_id) {
+      res.status(400);
+      throw new Error("Invalid vehicle_id");
+    }
+    const vehicleComment = await Comment.find({ vehicle_id });
+    if (!vehicleComment) {
+      res.status(500);
+      throw new Error("Something went wrong when fetching owner comment");
+    }
+    if (vehicleComment.length === 0) {
+      res.status(404);
+      throw new Error("Vehicle don't have any comments");
+    }
+    res.status(200).json(vehicleComment);
+  } catch (error) {
+    res
+      .status(res.statusCode || 500)
+      .send(error.message || "Internal Server Error");
+  }
+});
 
 module.exports = {
   createComment,
+  getCommentByUserId,
+  getCommentByVehicleId,
 };
