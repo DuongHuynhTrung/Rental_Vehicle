@@ -1,15 +1,20 @@
 const mongoose = require("mongoose");
 
-const CarCommentSchema = mongoose.Schema(
+const CommentSchema = mongoose.Schema(
   {
-    user_id: {
+    owner_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    customer_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
     vehicle_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Car",
+      ref: "Vehicle",
       required: true,
     },
     comment: {
@@ -29,4 +34,4 @@ const CarCommentSchema = mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("Comment", CarCommentSchema);
+module.exports = mongoose.model("Comment", CommentSchema);

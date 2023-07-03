@@ -255,59 +255,6 @@ const verifyOTPWhenRegister = asyncHandler(async (req, res, next) => {
         throw new Error("OTP is expired! Please try again");
       }
 
-      //Create new user
-      const {
-        firstName,
-        lastName,
-        gender,
-        dob,
-        address,
-        phone,
-        email,
-        password,
-        roleName,
-      } = req.body;
-      if (
-        !firstName ||
-        !lastName ||
-        !gender ||
-        !dob ||
-        !address ||
-        !phone ||
-        !email ||
-        !password ||
-        !roleName
-      ) {
-        res.status(400);
-        throw new Error("All field not be empty!");
-      }
-      const userEmailAvailable = await User.findOne({ email });
-      if (userEmailAvailable) {
-        res.status(400).send("User has already registered with Email!");
-      }
-
-      const userPhoneAvailable = await User.findOne({ phone });
-      if (userPhoneAvailable) {
-        res.status(400).send("User has already registered with Phone Number!");
-      }
-
-      //Hash password
-      const role = await Role.findOne({ roleName });
-      const user = await User.create({
-        firstName,
-        lastName,
-        gender,
-        dob,
-        address,
-        phone,
-        email,
-        password: hashedPassword,
-        role_id: role._id.toString(),
-      });
-      if (!user) {
-        res.status(500).send("Something went wrong registering the user");
-      }
-
       res.status(200).send("Successfully registered");
     } catch (error) {
       console.log(error);
