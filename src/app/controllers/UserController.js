@@ -172,7 +172,7 @@ const sendOTPWhenRegister = asyncHandler(async (req, res) => {
               <td>
                 <img
                   alt="Plaid"
-                  src="https://trello.com/1/cards/6472c337cbe3783b93fbd8e1/attachments/6472c3a0029aaaf8912afee0/download/DriveConn2-01.png"
+                  src="https://live.staticflickr.com/65535/53020663132_093de98b60_z.jpg"
                   width="150"
                   height="auto"
                   style="display:block;outline:none;border:none;text-decoration:none;margin:0 auto"
@@ -669,7 +669,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
           <td>
             <img
               alt="Plaid"
-              src="https://trello.com/1/cards/6472c337cbe3783b93fbd8e1/attachments/6472c3a0029aaaf8912afee0/download/DriveConn2-01.png"
+              src="https://live.staticflickr.com/65535/53020663132_093de98b60_z.jpg"
               width="150"
               height="auto"
               style="display:block;outline:none;border:none;text-decoration:none;margin:0 auto"
@@ -863,7 +863,7 @@ const sendMailWhenRegisterOwner = asyncHandler(async (req, res) => {
       <body style="background-color:#fff;font-family:-apple-system,BlinkMacSystemFont,Segoe
     UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif">
     <div style="width:50vw; margin: 0 auto">
-        <img src="https://drive.google.com/file/d/1jfpDVa_FzNk6W5mdDY33t5dhVpfCkhZb/view"
+        <img src="https://live.staticflickr.com/65535/53021719293_a8b18dad01_h.jpg"
         style="width: 100%;height:120px;object-fit: cover;"
         >
         <table style="padding:0 40px" align="center" border="0" cellPadding="0" cellSpacing="0" role="presentation"
