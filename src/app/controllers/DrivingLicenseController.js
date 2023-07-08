@@ -98,8 +98,8 @@ const updateDrivingLicense = asyncHandler(async (req, res, next) => {
       res.status(404);
       throw new Error("User doesn't register Driving License!");
     }
-    const { licenseNo, licenseClass, expireDate } = req.body;
-    if (!licenseNo || !licenseClass || !expireDate) {
+    const { licenseNo, licenseClass, expireDate, image } = req.body;
+    if (!licenseNo || !licenseClass || !expireDate || !image) {
       res.status(400);
       throw new Error("All field not be empty!");
     }
@@ -110,21 +110,34 @@ const updateDrivingLicense = asyncHandler(async (req, res, next) => {
         "You don't have permission to update drivingLicense's information!"
       );
     }
-    const drivingLicenseAvailable = await DrivingLicense.findOne({ licenseNo });
-    if (drivingLicenseAvailable) {
-      res.status(400);
-      throw new Error(
-        "Driving License Number has already registered by other User!"
+    if (drivingLicense.licenseNo === licenseNo) {
+      const updateDrivingLicense = await DrivingLicense.findByIdAndUpdate(
+        drivingLicense._id.toString(),
+        req.body,
+        {
+          new: true,
+        }
       );
-    }
-    const updateDrivingLicense = await DrivingLicense.findByIdAndUpdate(
-      drivingLicense._id.toString(),
-      req.body,
-      {
-        new: true,
+      res.status(200).json(updateDrivingLicense);
+    } else {
+      const drivingLicenseAvailable = await DrivingLicense.findOne({
+        licenseNo,
+      });
+      if (drivingLicenseAvailable) {
+        res.status(400);
+        throw new Error(
+          "Driving License Number has already registered by other User!"
+        );
       }
-    );
-    res.status(200).json(updateDrivingLicense);
+      const updateDrivingLicense = await DrivingLicense.findByIdAndUpdate(
+        drivingLicense._id.toString(),
+        req.body,
+        {
+          new: true,
+        }
+      );
+      res.status(200).json(updateDrivingLicense);
+    }
   } catch (error) {
     res
       .status(error.statusCode || 500)
