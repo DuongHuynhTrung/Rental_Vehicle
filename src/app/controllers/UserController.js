@@ -599,7 +599,7 @@ const changePassword = asyncHandler(async (req, res, next) => {
 const updateAvatarUser = asyncHandler(async (req, res) => {
   try {
     const user_id = req.user.id;
-    const imgURL = req.file.filename;
+    const imgURL = req.body.imgURL;
     const updateProfile = await User.findByIdAndUpdate(
       user_id,
       {
