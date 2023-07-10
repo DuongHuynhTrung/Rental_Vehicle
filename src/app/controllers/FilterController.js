@@ -1,8 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const Car = require("../models/Car/Car");
 const Motorbike = require("../models/Motorbike/Motorbike");
-const CarCategory = require("../models/Car/CarCategory");
-const MotorbikeCategory = require("../models/Motorbike/MotorbikeCategory");
+const Booking = require("../models/Booking");
 
 //@desc Get drivingLicense Of User
 //@route GET /vehicleType
@@ -603,13 +602,25 @@ const getVehicleByDate = asyncHandler(async (req, res) => {
       let { startDate, endDate } = req.body;
       startDate = moment(startDate);
       endDate = moment(endDate);
-      
+      let bookings = Booking.find()
+        .populate("user_id")
+        .populate("vehicle_id")
+        .populate("user_canceled")
+        .populate("voucher_id")
+        .exec();
+      bookings = bookings.filter(
+        (booking) =>
+          booking.bookingStatus === "Pending" ||
+          booking.bookingStatus === "Processing" ||
+          booking.bookingStatus === "Paying" ||
+          booking.bookingStatus === "Delivering"
+      );
+      return bookings;
     } catch (error) {
       res.status(res.statusCode || 500).send(error.message);
     }
   } else {
     try {
-      
     } catch (error) {
       res.status(res.statusCode || 500).send(error.message);
     }

@@ -426,7 +426,12 @@ const updateUsers = asyncHandler(async (req, res, next) => {
       res.status(403);
       throw new Error("You don't have permission to update user's profile");
     }
-    const isChangePhone = user.phone.toString() !== phone ? true : false;
+    // const pattern = /^0\d{9}$/;
+    // if (!pattern.test(phone)) {
+    //   res.status(400);
+    //   throw new Error("Phone must have 10 numbers and start with 0 number!");
+    // }
+    const isChangePhone = user.phone !== phone ? true : false;
     if (isChangePhone) {
       const userAvailable = await User.findOne({ phone });
       if (userAvailable) {
