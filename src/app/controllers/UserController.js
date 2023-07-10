@@ -46,6 +46,11 @@ const registerUser = asyncHandler(async (req, res, next) => {
     }
 
     if (phone !== "") {
+      const pattern = /^0\d{9}$/;
+      if (!pattern.test(phone)) {
+        res.status(400);
+        throw new Error("Phone must have 10 numbers and start with 0 number!");
+      }
       const userPhoneAvailable = await User.findOne({ phone });
       if (userPhoneAvailable) {
         res.status(400);

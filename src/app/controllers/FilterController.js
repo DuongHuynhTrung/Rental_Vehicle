@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const Car = require("../models/Car/Car");
 const Motorbike = require("../models/Motorbike/Motorbike");
+const moment = require("moment/moment");
 const Booking = require("../models/Booking");
 
 //@desc Get drivingLicense Of User
@@ -602,28 +603,162 @@ const getVehicleByDate = asyncHandler(async (req, res) => {
       let { startDate, endDate } = req.body;
       startDate = moment(startDate);
       endDate = moment(endDate);
-      let bookings = Booking.find()
+      if (endDate.isBefore(startDate)) {
+        res.status(400);
+        throw new Error("Start date must be before end date");
+      }
+      let bookings = await Booking.find()
         .populate("user_id")
         .populate("vehicle_id")
         .populate("user_canceled")
         .populate("voucher_id")
         .exec();
-      bookings = bookings.filter(
-        (booking) =>
-          booking.bookingStatus === "Pending" ||
-          booking.bookingStatus === "Processing" ||
-          booking.bookingStatus === "Paying" ||
-          booking.bookingStatus === "Delivering"
-      );
-      return bookings;
+      bookings = bookings.filter((booking) => {
+        const bookingStartDate = moment(booking.bookingStart);
+        const bookingEndDate = moment(booking.bookingEnd);
+        return (
+          ((startDate.isAfter(bookingStartDate) &&
+            endDate.isBefore(bookingStartDate)) ||
+            (startDate.isBefore(bookingStartDate) &&
+              endDate.isAfter(bookingEndDate)) ||
+            (startDate.isBefore(bookingStartDate) &&
+              endDate.isBefore(bookingEndDate))) &&
+          (booking.bookingStatus === "Pending" ||
+            booking.bookingStatus === "Processing" ||
+            booking.bookingStatus === "Paying" ||
+            booking.bookingStatus === "Delivering")
+        );
+      });
+      if (bookings.length > 0) {
+        let cars = await Car.find()
+          .populate({
+            path: "vehicle_id",
+            populate: {
+              path: "user_id",
+              model: "User",
+            },
+          })
+          .populate("autoMaker_id")
+          .populate("model_id")
+          .populate("category_id")
+          .exec();
+        bookings.forEach((booking) => {
+          cars = cars.filter((car) => {
+            return (
+              car.vehicle_id._id.toString() !==
+              booking.vehicle_id._id.toString()
+            );
+          });
+        });
+        if (cars.length === 0) {
+          res.status(404);
+          throw new Error("Have no car available for this range time");
+        }
+        res.status(200).json(cars);
+      } else if (bookings.length === 0) {
+        const cars = await Car.find()
+          .populate({
+            path: "vehicle_id",
+            populate: {
+              path: "user_id",
+              model: "User",
+            },
+          })
+          .populate("autoMaker_id")
+          .populate("model_id")
+          .populate("category_id")
+          .exec();
+        res.status(200).json(cars);
+      } else {
+        res.status(500);
+        throw new Error("Something when wrong when filtering cars by date");
+      }
+    } catch (error) {
+      res.status(res.statusCode || 500).send(error.message);
+    }
+  } else if (vehicleType === "Motorbike") {
+    try {
+      let { startDate, endDate } = req.body;
+      startDate = moment(startDate);
+      endDate = moment(endDate);
+      if (endDate.isBefore(startDate)) {
+        res.status(400);
+        throw new Error("Start date must be before end date");
+      }
+      let bookings = await Booking.find()
+        .populate("user_id")
+        .populate("vehicle_id")
+        .populate("user_canceled")
+        .populate("voucher_id")
+        .exec();
+      bookings = bookings.filter((booking) => {
+        const bookingStartDate = moment(booking.bookingStart);
+        const bookingEndDate = moment(booking.bookingEnd);
+        return (
+          ((startDate.isAfter(bookingStartDate) &&
+            endDate.isBefore(bookingStartDate)) ||
+            (startDate.isBefore(bookingStartDate) &&
+              endDate.isAfter(bookingEndDate)) ||
+            (startDate.isBefore(bookingStartDate) &&
+              endDate.isBefore(bookingEndDate))) &&
+          (booking.bookingStatus === "Pending" ||
+            booking.bookingStatus === "Processing" ||
+            booking.bookingStatus === "Paying" ||
+            booking.bookingStatus === "Delivering")
+        );
+      });
+      if (bookings.length > 0) {
+        let motorbikes = await Motorbike.find()
+          .populate({
+            path: "vehicle_id",
+            populate: {
+              path: "user_id",
+              model: "User",
+            },
+          })
+          .populate("autoMaker_id")
+          .populate("model_id")
+          .populate("category_id")
+          .exec();
+        bookings.forEach((booking) => {
+          motorbikes = motorbikes.filter((car) => {
+            return (
+              car.vehicle_id._id.toString() !==
+              booking.vehicle_id._id.toString()
+            );
+          });
+        });
+        if (motorbikes.length === 0) {
+          res.status(404);
+          throw new Error("Have no motorbike available for this range time");
+        }
+        res.status(200).json(motorbikes);
+      } else if (bookings.length === 0) {
+        const motorbikes = await Motorbike.find()
+          .populate({
+            path: "vehicle_id",
+            populate: {
+              path: "user_id",
+              model: "User",
+            },
+          })
+          .populate("autoMaker_id")
+          .populate("model_id")
+          .populate("category_id")
+          .exec();
+        res.status(200).json(motorbikes);
+      } else {
+        res.status(500);
+        throw new Error(
+          "Something when wrong when filtering motorbikes by date"
+        );
+      }
     } catch (error) {
       res.status(res.statusCode || 500).send(error.message);
     }
   } else {
-    try {
-    } catch (error) {
-      res.status(res.statusCode || 500).send(error.message);
-    }
+    res.status(400);
+    throw new Error("Vehicle Type is invalid");
   }
 });
 
@@ -637,4 +772,5 @@ module.exports = {
   getCarsByTransmission,
   getVehicleByAddress,
   getVehicleByFuel,
+  getVehicleByDate,
 };

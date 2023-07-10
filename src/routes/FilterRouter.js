@@ -12,6 +12,7 @@ const {
   getCarsByTransmission,
   getVehicleByAddress,
   getVehicleByFuel,
+  getVehicleByDate,
 } = require("../app/controllers/FilterController");
 
 /**
@@ -129,5 +130,7 @@ filterRouter.route("/cars/transmission").get(getCarsByTransmission);
 filterRouter.route("/vehicles/address").get(getVehicleByAddress);
 
 filterRouter.route("/vehicles/fuel").get(getVehicleByFuel);
+
+filterRouter.route("/vehicles/date").get(getVehicleByDate);
 
 module.exports = filterRouter;

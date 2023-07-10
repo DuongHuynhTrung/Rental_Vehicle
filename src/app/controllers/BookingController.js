@@ -124,9 +124,33 @@ const createBooking = asyncHandler(async (req, res, next) => {
       res.status(404);
       throw new Error("Vehicle not Found!");
     }
-    if (vehicleAvailable.isRented) {
-      res.status(500);
-      throw new Error("Vehicle has already booked by other Customer!");
+    const startDate = moment(bookingStart);
+    const endDate = moment(bookingEnd);
+    let bookings = await Booking.find()
+      .populate("user_id")
+      .populate("vehicle_id")
+      .populate("user_canceled")
+      .populate("voucher_id")
+      .exec();
+    bookings = bookings.filter((booking) => {
+      const bookingStartDate = moment(booking.bookingStart);
+      const bookingEndDate = moment(booking.bookingEnd);
+      return (
+        ((startDate.isAfter(bookingStartDate) &&
+          endDate.isBefore(bookingStartDate)) ||
+          (startDate.isBefore(bookingStartDate) &&
+            endDate.isAfter(bookingEndDate)) ||
+          (startDate.isBefore(bookingStartDate) &&
+            endDate.isBefore(bookingEndDate))) &&
+        (booking.bookingStatus === "Pending" ||
+          booking.bookingStatus === "Processing" ||
+          booking.bookingStatus === "Paying" ||
+          booking.bookingStatus === "Delivering")
+      );
+    });
+    if (bookings.length > 0) {
+      res.status(400);
+      throw new Error("Vehicle is already booked in this range time.");
     }
     if (voucherCode === undefined) {
       const start = new Date(bookingStart);

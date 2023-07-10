@@ -49,11 +49,6 @@ const vehicleSchema = mongoose.Schema(
       type: Number,
       default: 0,
     },
-    isRented: {
-      type: Boolean,
-      required: true,
-      default: false,
-    },
     rate: {
       type: Number,
       min: 0,
