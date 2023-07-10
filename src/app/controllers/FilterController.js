@@ -618,10 +618,10 @@ const getVehicleByDate = asyncHandler(async (req, res) => {
         const bookingEndDate = moment(booking.bookingEnd);
         return (
           ((startDate.isAfter(bookingStartDate) &&
-            endDate.isBefore(bookingStartDate)) ||
+            startDate.isBefore(bookingStartDate)) ||
             (startDate.isBefore(bookingStartDate) &&
               endDate.isAfter(bookingEndDate)) ||
-            (startDate.isBefore(bookingStartDate) &&
+            (endDate.isAfter(bookingStartDate) &&
               endDate.isBefore(bookingEndDate))) &&
           (booking.bookingStatus === "Pending" ||
             booking.bookingStatus === "Processing" ||
@@ -696,10 +696,10 @@ const getVehicleByDate = asyncHandler(async (req, res) => {
         const bookingEndDate = moment(booking.bookingEnd);
         return (
           ((startDate.isAfter(bookingStartDate) &&
-            endDate.isBefore(bookingStartDate)) ||
+            startDate.isBefore(bookingStartDate)) ||
             (startDate.isBefore(bookingStartDate) &&
               endDate.isAfter(bookingEndDate)) ||
-            (startDate.isBefore(bookingStartDate) &&
+            (endDate.isAfter(bookingStartDate) &&
               endDate.isBefore(bookingEndDate))) &&
           (booking.bookingStatus === "Pending" ||
             booking.bookingStatus === "Processing" ||
@@ -762,6 +762,234 @@ const getVehicleByDate = asyncHandler(async (req, res) => {
   }
 });
 
+const getVehicleWithManyTypes = asyncHandler(async (req, res) => {
+  const vehicleType = req.query.vehicleType;
+  if (!vehicleType) {
+    res.status(400).send("Vehicle type is required");
+  }
+  if (vehicleType !== "Motorbike" && vehicleType !== "Car") {
+    res.status(400).send("Vehicle type Invalid");
+  }
+  let {
+    startDate,
+    endDate,
+    insurance,
+    mortgage,
+    maxPrice,
+    minPrice,
+    category,
+    autoMaker,
+    model,
+    transmission,
+    address,
+    fuel,
+  } = req.query;
+  if (vehicleType === "Car") {
+    try {
+      let cars = await Car.find()
+        .populate({
+          path: "vehicle_id",
+          populate: {
+            path: "user_id",
+            model: "User",
+          },
+        })
+        .populate("autoMaker_id")
+        .populate("model_id")
+        .populate("category_id")
+        .exec();
+      if (startDate && endDate) {
+        startDate = moment(startDate);
+        endDate = moment(endDate);
+        if (endDate.isBefore(startDate)) {
+          res.status(400);
+          throw new Error("Start date must be before end date");
+        }
+        let bookings = await Booking.find()
+          .populate("user_id")
+          .populate("vehicle_id")
+          .populate("user_canceled")
+          .populate("voucher_id")
+          .exec();
+        bookings = bookings.filter((booking) => {
+          const bookingStartDate = moment(booking.bookingStart);
+          const bookingEndDate = moment(booking.bookingEnd);
+          return (
+            ((startDate.isAfter(bookingStartDate) &&
+              startDate.isBefore(bookingStartDate)) ||
+              (startDate.isBefore(bookingStartDate) &&
+                endDate.isAfter(bookingEndDate)) ||
+              (endDate.isAfter(bookingStartDate) &&
+                endDate.isBefore(bookingEndDate))) &&
+            (booking.bookingStatus === "Pending" ||
+              booking.bookingStatus === "Processing" ||
+              booking.bookingStatus === "Paying" ||
+              booking.bookingStatus === "Delivering")
+          );
+        });
+        if (bookings.length > 0) {
+          bookings.forEach((booking) => {
+            cars = cars.filter((car) => {
+              return (
+                car.vehicle_id._id.toString() !==
+                booking.vehicle_id._id.toString()
+              );
+            });
+          });
+          if (cars.length === 0) {
+            res.status(404);
+            throw new Error("Have no car available for this range time");
+          }
+        }
+      }
+      if (insurance) {
+        cars = cars.filter((car) => car.vehicle_id.insurance === true);
+      }
+      if (mortgage) {
+        cars = cars.filter((car) => car.vehicle_id.mortgage === true);
+      }
+      if (maxPrice && minPrice) {
+        if (isNaN(maxPrice) || isNaN(minPrice)) {
+          res.status(400);
+          throw new Error("Invalid price input");
+        }
+        maxPrice = Number(maxPrice);
+        minPrice = Number(minPrice);
+        if (maxPrice < minPrice) {
+          res.status(400);
+          throw new Error("Invalid price range input");
+        }
+        cars = cars.filter(
+          (car) =>
+            car.vehicle_id.price >= minPrice && car.vehicle_id.price <= maxPrice
+        );
+      }
+      if (category) {
+        cars = cars.filter((car) => car.category_id.name === category);
+      }
+      if (autoMaker) {
+        cars = cars.filter((car) => car.autoMaker_id.name === autoMaker);
+      }
+      if (model) {
+        cars = cars.filter((car) => car.model_id.name === model);
+      }
+      if (transmission) {
+        cars = cars.filter((car) => car.transmission === transmission);
+      }
+      if (address) {
+        cars = cars.filter((car) => car.vehicle_id.location === address);
+      }
+      if (fuel) {
+        cars = cars.filter((car) => car.fuel === fuel);
+      }
+      res.status(200).json(cars);
+    } catch (error) {
+      res.status(res.statusCode || 500).send(error.message);
+    }
+  } else if (vehicleType === "Motorbike") {
+    let motorbikes = await Motorbike.find()
+      .populate({
+        path: "vehicle_id",
+        populate: {
+          path: "user_id",
+          model: "User",
+        },
+      })
+      .populate("autoMaker_id")
+      .populate("model_id")
+      .populate("category_id")
+      .exec();
+    if (startDate && endDate) {
+      startDate = moment(startDate);
+      endDate = moment(endDate);
+      if (endDate.isBefore(startDate)) {
+        res.status(400);
+        throw new Error("Start date must be before end date");
+      }
+      let bookings = await Booking.find()
+        .populate("user_id")
+        .populate("vehicle_id")
+        .populate("user_canceled")
+        .populate("voucher_id")
+        .exec();
+      bookings = bookings.filter((booking) => {
+        const bookingStartDate = moment(booking.bookingStart);
+        const bookingEndDate = moment(booking.bookingEnd);
+        return (
+          ((startDate.isAfter(bookingStartDate) &&
+            startDate.isBefore(bookingStartDate)) ||
+            (startDate.isBefore(bookingStartDate) &&
+              endDate.isAfter(bookingEndDate)) ||
+            (endDate.isAfter(bookingStartDate) &&
+              endDate.isBefore(bookingEndDate))) &&
+          (booking.bookingStatus === "Pending" ||
+            booking.bookingStatus === "Processing" ||
+            booking.bookingStatus === "Paying" ||
+            booking.bookingStatus === "Delivering")
+        );
+      });
+      if (bookings.length > 0) {
+        bookings.forEach((booking) => {
+          motorbikes = motorbikes.filter((motorbike) => {
+            return (
+              motorbike.vehicle_id._id.toString() !==
+              booking.vehicle_id._id.toString()
+            );
+          });
+        });
+        if (motorbikes.length === 0) {
+          res.status(404);
+          throw new Error("Have no motorbike available for this range time");
+        }
+      }
+    }
+    if (insurance) {
+      motorbikes = motorbikes.filter(
+        (motorbike) => motorbike.vehicle_id.insurance === true
+      );
+    }
+    if (mortgage) {
+      motorbikes = motorbikes.filter(
+        (motorbike) => motorbike.vehicle_id.mortgage === true
+      );
+    }
+    if (maxPrice && minPrice) {
+      motorbikes = motorbikes.filter(
+        (motorbike) =>
+          motorbike.vehicle_id.price >= minPrice &&
+          motorbike.vehicle_id.price <= maxPrice
+      );
+    }
+    if (category) {
+      motorbikes = motorbikes.filter(
+        (motorbike) => motorbike.category_id.name === category
+      );
+    }
+    if (autoMaker) {
+      motorbikes = motorbikes.filter(
+        (motorbike) => motorbike.autoMaker_id.name === autoMaker
+      );
+    }
+    if (model) {
+      motorbikes = motorbikes.filter(
+        (motorbike) => motorbike.model_id.name === model
+      );
+    }
+    if (address) {
+      motorbikes = motorbikes.filter(
+        (motorbike) => motorbike.vehicle_id.location === address
+      );
+    }
+    if (fuel) {
+      motorbikes = motorbikes.filter((motorbike) => motorbike.fuel === fuel);
+    }
+    res.status(200).json(motorbikes);
+  } else {
+    res.status(400);
+    throw new Error("Vehicle Type is invalid");
+  }
+});
+
 module.exports = {
   getVehiclesHaveInsurance,
   getVehiclesNoMortgage,
@@ -773,4 +1001,5 @@ module.exports = {
   getVehicleByAddress,
   getVehicleByFuel,
   getVehicleByDate,
+  getVehicleWithManyTypes,
 };
