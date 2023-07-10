@@ -433,10 +433,12 @@ const updateUsers = asyncHandler(async (req, res, next) => {
     // }
     const isChangePhone = user.phone !== phone ? true : false;
     if (isChangePhone) {
-      const userAvailable = await User.findOne({ phone });
-      if (userAvailable) {
-        res.status(400);
-        throw new Error("This Phone has already Exist!");
+      if (phone !== "") {
+        const userPhoneAvailable = await User.findOne({ phone });
+        if (userPhoneAvailable) {
+          res.status(400);
+          throw new Error("User has already registered with Phone Number!");
+        }
       }
     }
     const updateUser = await User.findByIdAndUpdate(req.params.id, req.body, {
