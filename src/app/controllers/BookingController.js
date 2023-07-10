@@ -1110,18 +1110,11 @@ const cancelOwnerBooking = asyncHandler(async (req, res, next) => {
     const status = booking.bookingStatus;
     switch (status) {
       case "Pending": {
-        const userId = booking.user_id._id.toString();
-        if (req.user.id !== userId) {
-          res.status(403);
-          throw new Error(
-            "You don't have permission to cancel other customer booking's!"
-          );
-        }
         const cancelBooking = await Booking.findByIdAndUpdate(
           { _id: bookingId },
           {
             bookingStatus: "Cancelled",
-            user_canceled: booking.user_id._id.toString(),
+            user_canceled: booking.vehicle_id.user_id._id.toString(),
             cancel_reason: cancelReason,
           },
           {
@@ -1146,18 +1139,11 @@ const cancelOwnerBooking = asyncHandler(async (req, res, next) => {
         break;
       }
       case "Paying": {
-        const userId = booking.user_id._id.toString();
-        if (req.user.id !== userId) {
-          res.status(403);
-          throw new Error(
-            "You don't have permission to cancel other customer booking's!"
-          );
-        }
         const cancelBooking = await Booking.findByIdAndUpdate(
           { _id: bookingId },
           {
             bookingStatus: "Cancelled",
-            user_canceled: booking.user_id._id.toString(),
+            user_canceled: booking.vehicle_id.user_id._id.toString(),
             cancel_reason: cancelReason,
           },
           {
@@ -1182,13 +1168,6 @@ const cancelOwnerBooking = asyncHandler(async (req, res, next) => {
         break;
       }
       case "Processing": {
-        const userId = booking.user_id._id.toString();
-        if (req.user.id !== userId) {
-          res.status(403);
-          throw new Error(
-            "You don't have permission to cancel other customer booking's!"
-          );
-        }
         const paidTime = moment(booking.createdAt);
         const now = moment();
         const startDate = moment(booking.bookingStart);
@@ -1207,7 +1186,7 @@ const cancelOwnerBooking = asyncHandler(async (req, res, next) => {
               bookingId,
               {
                 bookingStatus: "Cancelled",
-                user_canceled: booking.user_id._id.toString(),
+                user_canceled: booking.vehicle_id.user_id._id.toString(),
                 cancel_reason: cancelReason,
               },
               {
@@ -1243,7 +1222,7 @@ const cancelOwnerBooking = asyncHandler(async (req, res, next) => {
               bookingId,
               {
                 bookingStatus: "Cancelled",
-                user_canceled: booking.user_id._id.toString(),
+                user_canceled: booking.vehicle_id.user_id._id.toString(),
                 cancel_reason: cancelReason,
               },
               {
@@ -1279,7 +1258,7 @@ const cancelOwnerBooking = asyncHandler(async (req, res, next) => {
               bookingId,
               {
                 bookingStatus: "Cancelled",
-                user_canceled: booking.user_id._id.toString(),
+                user_canceled: booking.vehicle_id.user_id._id.toString(),
                 cancel_reason: cancelReason,
               },
               {
