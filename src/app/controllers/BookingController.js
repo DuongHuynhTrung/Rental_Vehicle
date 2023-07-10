@@ -675,7 +675,7 @@ const changeStatusBooking = asyncHandler(async (req, res, next) => {
           }
 
           const admin = await User.findOne({
-            role_id: "63e4730f62bf96d8df480f58",
+            role_id: process.env.ADMIN_ID,
           });
           if (!admin) {
             res.status(404);
@@ -732,6 +732,7 @@ const changeStatusBooking = asyncHandler(async (req, res, next) => {
               "Something went wrong when changing vehicle status"
             );
           }
+
           const changeStatusBooking = await Booking.findByIdAndUpdate(
             bookingId,
             {
@@ -741,11 +742,31 @@ const changeStatusBooking = asyncHandler(async (req, res, next) => {
               new: true,
             }
           );
-          if (!changeStatusBooking) {
+
+          const addBookedVehicle = await Vehicle.findByIdAndUpdate(
+            booking.vehicle_id._id,
+            {
+              booked: vehicle.booked + 1,
+            }
+          );
+          const customer = await User.findById(booking.user_id);
+          const addBookedCustomer = await User.findByIdAndUpdate(
+            booking.user_id._id,
+            {
+              booked: customer.booked + 1,
+            }
+          );
+          const addBookedOwner = await User.findByIdAndUpdate(owner._id, {
+            booked: owner.booked + 1,
+          });
+          if (
+            !changeStatusBooking ||
+            !addBookedVehicle ||
+            !addBookedCustomer ||
+            !addBookedOwner
+          ) {
             res.status(500);
-            throw new Error(
-              "Something went wrong in changeling status booking!"
-            );
+            throw new Error("Something went wrong in changing status booking!");
           }
           //commit the transaction
           await session.commitTransaction();

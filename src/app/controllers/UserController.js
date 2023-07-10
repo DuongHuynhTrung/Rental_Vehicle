@@ -411,13 +411,13 @@ const updateUsers = asyncHandler(async (req, res, next) => {
       phone,
     } = req.body;
     if (
-      !firstName ||
-      !lastName ||
-      !gender ||
-      !dob ||
-      !address ||
-      !address_details ||
-      !phone
+      firstName === undefined ||
+      lastName === undefined ||
+      gender === undefined ||
+      dob === undefined ||
+      address === undefined ||
+      address_details === undefined ||
+      phone === undefined
     ) {
       res.status(400);
       throw new Error("All field not be empty!");

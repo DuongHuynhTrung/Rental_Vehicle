@@ -3,11 +3,6 @@ const Car = require("../models/Car/Car");
 const Motorbike = require("../models/Motorbike/Motorbike");
 const CarCategory = require("../models/Car/CarCategory");
 const MotorbikeCategory = require("../models/Motorbike/MotorbikeCategory");
-const { min } = require("moment");
-const { default: axios } = require("axios");
-const {
-  CompositionHookPage,
-} = require("twilio/lib/rest/video/v1/compositionHook");
 
 //@desc Get drivingLicense Of User
 //@route GET /vehicleType
@@ -592,6 +587,32 @@ const getCarsByTransmission = asyncHandler(async (req, res) => {
     res.status(200).json(carsWithTransmission);
   } catch (error) {
     res.status(res.statusCode || 500).send(error.message);
+  }
+});
+
+const getVehicleByDate = asyncHandler(async (req, res) => {
+  const vehicleType = req.query.vehicleType;
+  if (!vehicleType) {
+    res.status(400).send("Vehicle type is required");
+  }
+  if (vehicleType !== "Motorbike" && vehicleType !== "Car") {
+    res.status(400).send("Vehicle type Invalid");
+  }
+  if (vehicleType === "Car") {
+    try {
+      let { startDate, endDate } = req.body;
+      startDate = moment(startDate);
+      endDate = moment(endDate);
+      
+    } catch (error) {
+      res.status(res.statusCode || 500).send(error.message);
+    }
+  } else {
+    try {
+      
+    } catch (error) {
+      res.status(res.statusCode || 500).send(error.message);
+    }
   }
 });
 
