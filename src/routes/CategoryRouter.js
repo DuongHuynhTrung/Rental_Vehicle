@@ -12,18 +12,14 @@ const {
 } = require("../app/controllers/CategoryController");
 const {
   validateTokenAdmin,
-  validateTokenAdminAndOwner,
+  validateToken,
 } = require("../app/middleware/validateTokenHandler");
 
 categoryRouter.use(bodyParser.json());
 
-categoryRouter
-  .route("/cars")
-  .get(validateTokenAdminAndOwner, getAllCarCategory);
+categoryRouter.route("/cars").get(validateToken, getAllCarCategory);
 
-categoryRouter
-  .route("/motorbikes")
-  .get(validateTokenAdminAndOwner, getAllMotorbikeCategory);
+categoryRouter.route("/motorbikes").get(validateToken, getAllMotorbikeCategory);
 
 categoryRouter.use(validateTokenAdmin);
 

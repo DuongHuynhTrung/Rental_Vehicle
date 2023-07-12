@@ -114,13 +114,10 @@ const registerCar = asyncHandler(async (req, res, next) => {
       res.status(400);
       throw new Error("All field not be empty!");
     }
-    const cars = await Car.find().populate("vehicle_id", "licensePlate");
-    const isCarExist = cars.find(
-      (car) => car.vehicle_id.licensePlate === licensePlate
-    );
-    if (isCarExist) {
+    const isExistLicensePlate = await Vehicle.findOne({ licensePlate });
+    if (isExistLicensePlate) {
       res.status(400);
-      throw new Error("Car has already registered with License Plates!");
+      throw new Error("License Plate has already registered!");
     }
     const carAutoMaker = await CarAutoMaker.findOne({ name: autoMaker });
     if (!carAutoMaker) {
@@ -181,7 +178,6 @@ const registerCar = asyncHandler(async (req, res, next) => {
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    console.log(error);
     res
       .status(res.statusCode || 500)
       .send(error.message || "Internal Server Error");

@@ -12,18 +12,16 @@ const {
 } = require("../app/controllers/AutoMakerController");
 const {
   validateTokenAdmin,
-  validateTokenAdminAndOwner,
+  validateToken,
 } = require("../app/middleware/validateTokenHandler");
 
 autoMakerRouter.use(bodyParser.json());
 
-autoMakerRouter
-  .route("/cars")
-  .get(validateTokenAdminAndOwner, getAllCarAutoMaker);
+autoMakerRouter.route("/cars").get(validateToken, getAllCarAutoMaker);
 
 autoMakerRouter
   .route("/motorbikes")
-  .get(validateTokenAdminAndOwner, getAllMotorbikeAutoMaker);
+  .get(validateToken, getAllMotorbikeAutoMaker);
 
 autoMakerRouter.use(validateTokenAdmin);
 
