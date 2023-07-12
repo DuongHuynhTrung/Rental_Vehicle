@@ -12,9 +12,19 @@ const {
 } = require("../app/controllers/AutoMakerController");
 const {
   validateTokenAdmin,
+  validateTokenAdminAndOwner,
 } = require("../app/middleware/validateTokenHandler");
 
 autoMakerRouter.use(bodyParser.json());
+
+autoMakerRouter
+  .route("/cars")
+  .get(validateTokenAdminAndOwner, getAllCarAutoMaker);
+
+autoMakerRouter
+  .route("/motorbikes")
+  .get(validateTokenAdminAndOwner, getAllMotorbikeAutoMaker);
+
 autoMakerRouter.use(validateTokenAdmin);
 
 autoMakerRouter
@@ -24,7 +34,6 @@ autoMakerRouter
     res.setHeader("Content-Type", "json/plain");
     next();
   })
-  .get(getAllCarAutoMaker)
   .post(createCarAutoMaker)
   .delete(deleteCarAutoMaker);
 

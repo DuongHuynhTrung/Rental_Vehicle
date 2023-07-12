@@ -12,9 +12,19 @@ const {
 } = require("../app/controllers/CategoryController");
 const {
   validateTokenAdmin,
+  validateTokenAdminAndOwner,
 } = require("../app/middleware/validateTokenHandler");
 
 categoryRouter.use(bodyParser.json());
+
+categoryRouter
+  .route("/cars")
+  .get(validateTokenAdminAndOwner, getAllCarCategory);
+
+categoryRouter
+  .route("/motorbikes")
+  .get(validateTokenAdminAndOwner, getAllMotorbikeCategory);
+
 categoryRouter.use(validateTokenAdmin);
 
 categoryRouter
@@ -24,7 +34,6 @@ categoryRouter
     res.setHeader("Content-Type", "json/plain");
     next();
   })
-  .get(getAllCarCategory)
   .post(createCarCategory)
   .delete(deleteCarCategory);
 
@@ -35,7 +44,6 @@ categoryRouter
     res.setHeader("Content-Type", "json/plain");
     next();
   })
-  .get(getAllMotorbikeCategory)
   .post(createMotorbikeCategory)
   .delete(deleteMotorbikeCategory);
 

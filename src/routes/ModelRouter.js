@@ -12,9 +12,17 @@ const {
 } = require("../app/controllers/ModelController");
 const {
   validateTokenAdmin,
+  validateTokenAdminAndOwner,
 } = require("../app/middleware/validateTokenHandler");
 
 modelRouter.use(bodyParser.json());
+
+modelRouter.route("/cars").get(validateTokenAdminAndOwner, getAllCarModel);
+
+modelRouter
+  .route("/motorbikes")
+  .get(validateTokenAdminAndOwner, getAllMotorbikeModel);
+
 modelRouter.use(validateTokenAdmin);
 
 modelRouter
