@@ -17,9 +17,9 @@ const {
 
 modelRouter.use(bodyParser.json());
 
-modelRouter.route("/cars").get(validateToken, getAllCarModel);
+modelRouter.route("/cars").get(getAllCarModel);
 
-modelRouter.route("/motorbikes").get(validateToken, getAllMotorbikeModel);
+modelRouter.route("/motorbikes").get(getAllMotorbikeModel);
 
 modelRouter.use(validateTokenAdmin);
 

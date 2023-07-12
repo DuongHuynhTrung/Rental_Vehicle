@@ -17,11 +17,9 @@ const {
 
 autoMakerRouter.use(bodyParser.json());
 
-autoMakerRouter.route("/cars").get(validateToken, getAllCarAutoMaker);
+autoMakerRouter.route("/cars").get(getAllCarAutoMaker);
 
-autoMakerRouter
-  .route("/motorbikes")
-  .get(validateToken, getAllMotorbikeAutoMaker);
+autoMakerRouter.route("/motorbikes").get(getAllMotorbikeAutoMaker);
 
 autoMakerRouter.use(validateTokenAdmin);
 

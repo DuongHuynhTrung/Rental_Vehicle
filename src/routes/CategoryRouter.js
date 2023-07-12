@@ -17,9 +17,9 @@ const {
 
 categoryRouter.use(bodyParser.json());
 
-categoryRouter.route("/cars").get(validateToken, getAllCarCategory);
+categoryRouter.route("/cars").get(getAllCarCategory);
 
-categoryRouter.route("/motorbikes").get(validateToken, getAllMotorbikeCategory);
+categoryRouter.route("/motorbikes").get(getAllMotorbikeCategory);
 
 categoryRouter.use(validateTokenAdmin);
 
