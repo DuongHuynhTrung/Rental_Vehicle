@@ -247,24 +247,19 @@ const sendOTPWhenRegister = asyncHandler(async (req, res) => {
 const verifyOTPWhenRegister = asyncHandler(async (req, res, next) => {
   try {
     const { otp, otpExpired, otpStored } = req.body;
-    try {
-      if (otpStored !== otp) {
-        res.status(400);
-        throw new Error("Wrong OTP! Please try again");
-      }
-      const currentTime = moment(new Date());
-      const otpExpires = moment(otpExpired);
-      const isExpired = currentTime.diff(otpExpires, "minutes");
-      if (isExpired > 10) {
-        res.status(400);
-        throw new Error("OTP is expired! Please try again");
-      }
-
-      res.status(200).send("Successfully registered");
-    } catch (error) {
-      console.log(error);
-      res.status(500).send(error.message);
+    if (otpStored !== otp) {
+      res.status(400);
+      throw new Error("Wrong OTP! Please try again");
     }
+    const currentTime = moment(new Date());
+    const otpExpires = moment(otpExpired);
+    const isExpired = currentTime.diff(otpExpires, "minutes");
+    if (isExpired > 10) {
+      res.status(400);
+      throw new Error("OTP is expired! Please try again");
+    }
+
+    res.status(200).send("Successfully registered");
   } catch (error) {
     res
       .status(res.statusCode || 500)

@@ -30,7 +30,6 @@ modelRouter
     res.setHeader("Content-Type", "json/plain");
     next();
   })
-  .get(getAllCarModel)
   .post(createCarModel)
   .delete(deleteCarModel);
 
@@ -41,7 +40,6 @@ modelRouter
     res.setHeader("Content-Type", "json/plain");
     next();
   })
-  .get(getAllMotorbikeModel)
   .post(createMotorbikeModel)
   .delete(deleteMotorbikeModel);
 

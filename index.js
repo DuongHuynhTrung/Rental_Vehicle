@@ -87,6 +87,7 @@ const authRouter = require("./src/routes/AuthRouter");
 const filterRouter = require("./src/routes/FilterRouter");
 const bookingRouter = require("./src/routes/BookingRouter");
 const commentRouter = require("./src/routes/CommentRouter");
+const feedbackRouter = require("./src/routes/FeedbackRouter");
 
 //Use Session
 app.use(
@@ -117,6 +118,7 @@ app.use("/api/bookings", bookingRouter);
 app.use("/api/paypal", paypalRouter);
 app.use("/api/vouchers", voucherRouter);
 app.use("/api/comments", commentRouter);
+app.use("/api/feedbacks", feedbackRouter);
 
 // Global error handler
 app.use(errorHandler);

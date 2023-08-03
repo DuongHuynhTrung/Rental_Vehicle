@@ -35,7 +35,15 @@ const {
  *                  example: 123456
  *    responses:
  *      200:
- *        description: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJOYW1lIjoiRHVvbmciLCJlbWFpbCI6InRydW5nZHVvbmdAZ21haWwuY29tIiwiaWQiOiI2M2UwODNhYjVjMTYyMzcwNjU2YTE0OTQifSwiaWF0IjoxNjc1ODQxNzE0LCJleHAiOjE2NzU4NDI2MTR9.cDeimio_-xU9HmdJ5E0DemwjHnCPKhnE6nIraNOv81g
+ *        content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               accessToken:
+ *                  type: string
+ *                  description: access token
+ *                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJOYW1lIjoiRHVvbmciLCJlbWFpbCI6InRydW5nZHVvbmdAZ21haWwuY29tIiwiaWQiOiI2M2UwODNhYjVjMTYyMzcwNjU2YTE0OTQifSwiaWF0IjoxNjc1ODQxNzE0LCJleHAiOjE2NzU4NDI2MTR9.cDeimio_-xU9HmdJ5E0DemwjHnCPKhnE6nIraNOv81geyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJOYW1lIjoiRHVvbmciLCJlbWFpbCI6InRydW5nZHVvbmdAZ21haWwuY29tIiwiaWQiOiI2M2UwODNhYjVjMTYyMzcwNjU2YTE0OTQifSwiaWF0IjoxNjc1ODQxNzE0LCJleHAiOjE2NzU4NDI2MTR9.cDeimio_-xU9HmdJ5E0DemwjHnCPKhnE6nIraNOv81g
  *      401:
  *        description: Email or Password is not Valid!
  *      429:
@@ -57,7 +65,15 @@ authRouter.route("/loginGoogle").post(loginLimiter, loginGoogle);
  *    description: Refresh Access token by checking valid cookie
  *    responses:
  *      200:
- *        description: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJOYW1lIjoiRHVvbmciLCJlbWFpbCI6InRydW5nZHVvbmdAZ21haWwuY29tIiwiaWQiOiI2M2UwODNhYjVjMTYyMzcwNjU2YTE0OTQifSwiaWF0IjoxNjc1ODQxNzE0LCJleHAiOjE2NzU4NDI2MTR9.cDeimio_-xU9HmdJ5E0DemwjHnCPKhnE6nIraNOv81g
+ *       content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              accessToken:
+ *                 type: string
+ *                 description: access token
+ *                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJOYW1lIjoiRHVvbmciLCJlbWFpbCI6InRydW5nZHVvbmdAZ21haWwuY29tIiwiaWQiOiI2M2UwODNhYjVjMTYyMzcwNjU2YTE0OTQifSwiaWF0IjoxNjc1ODQxNzE0LCJleHAiOjE2NzU4NDI2MTR9.cDeimio_-xU9HmdJ5E0DemwjHnCPKhnE6nIraNOv81geyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJOYW1lIjoiRHVvbmciLCJlbWFpbCI6InRydW5nZHVvbmdAZ21haWwuY29tIiwiaWQiOiI2M2UwODNhYjVjMTYyMzcwNjU2YTE0OTQifSwiaWF0IjoxNjc1ODQxNzE0LCJleHAiOjE2NzU4NDI2MTR9.cDeimio_-xU9HmdJ5E0DemwjHnCPKhnE6nIraNOv81g
  *      401:
  *        description: Email or Password is not Valid!
  *      403:
