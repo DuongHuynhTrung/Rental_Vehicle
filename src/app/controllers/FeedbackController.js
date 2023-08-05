@@ -1,10 +1,11 @@
 const asyncHandler = require("express-async-handler");
 const Feedback = require("../models/Feedback");
+const User = require("../models/User");
 
 const createFeedback = asyncHandler(async (req, res) => {
   try {
-    const { fullName, email, contentFeedback } = req.body;
-    if (!contentFeedback || !fullName || !email) {
+    const { fullName, email, contentFeedback, avatar } = req.body;
+    if (!contentFeedback || !fullName || !email || avatar === undefined) {
       res.status(400);
       throw new Error("All fields are required");
     }
@@ -12,6 +13,7 @@ const createFeedback = asyncHandler(async (req, res) => {
       contentFeedback,
       email,
       fullName,
+      avatar,
     });
     if (!feedback) {
       res.status(500);

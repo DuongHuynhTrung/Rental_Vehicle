@@ -10,6 +10,9 @@ const feedbackSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    avatar: {
+      type: String,
+    },
     contentFeedback: {
       type: String,
       required: true,
