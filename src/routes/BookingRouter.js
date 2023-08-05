@@ -1,8 +1,7 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require("express");
+const bodyParser = require("body-parser");
 const bookingRouter = express.Router();
 
-const validateToken = require('../app/middleware/validateTokenHandler');
 const {
   createBooking,
   getBookingById,
@@ -12,13 +11,12 @@ const {
   deleteBookingsForAdmin,
   returnVehicleAfterBooking,
   getAllBookingsOfHotelier,
-} = require('../app/controllers/BookingController');
-const {
-  createBookingDetails,
-  getBookingDetailsByBookingID,
-  getBookingDetailsForConfirm,
-  deleteBookingDetailsByBookingID,
-} = require('../app/controllers/BookingDetailsController');
+  cancelCustomerBooking,
+  cancelOwnerBooking,
+  changeStatusBooking,
+} = require("../app/controllers/BookingController");
+
+const { validateToken } = require("../app/middleware/validateTokenHandler");
 
 bookingRouter.use(bodyParser.json());
 
@@ -53,10 +51,10 @@ bookingRouter.use(bodyParser.json());
 bookingRouter.use(validateToken);
 
 bookingRouter
-  .route('/')
+  .route("/")
   .all((req, res, next) => {
     res.statusCode = 200;
-    res.setHeader('Content-Type', 'json/plain');
+    res.setHeader("Content-Type", "json/plain");
     next();
   })
 
@@ -172,7 +170,7 @@ bookingRouter
  *        description: Hotelier don't have any Booking!
  *
  */
-bookingRouter.route('/hotelier').get(getAllBookingsOfHotelier);
+bookingRouter.route("/hotelier").get(getAllBookingsOfHotelier);
 
 /**
  * @swagger
@@ -204,13 +202,13 @@ bookingRouter.route('/hotelier').get(getAllBookingsOfHotelier);
  *
  */
 
-bookingRouter.route('/admin').get(getAllBookings);
+bookingRouter.route("/admin").get(getAllBookings);
 
 bookingRouter
-  .route('/:bookingId')
+  .route("/:bookingId")
   .all((req, res, next) => {
     res.statusCode = 200;
-    res.setHeader('Content-Type', 'json/plain');
+    res.setHeader("Content-Type", "json/plain");
     next();
   })
 
@@ -326,7 +324,7 @@ bookingRouter
  *        description: Something went wrong of change status in cancelling booking! OR Something went wrong in cancelling booking!
  *
  */
-bookingRouter.route('/:bookingId/cancel').get(cancelBooking);
+bookingRouter.route("/:bookingId/cancel").get(cancelBooking);
 
 /**
  * @swagger
@@ -367,229 +365,12 @@ bookingRouter.route('/:bookingId/cancel').get(cancelBooking);
  *        description: Something went wrong with change status vehicle in return vehicle after booking
  *
  */
-bookingRouter.route('/:bookingId/return').get(returnVehicleAfterBooking);
+bookingRouter.route("/:bookingId/return").get(returnVehicleAfterBooking);
 
-/**
- *  @swagger
- *  components:
- *    schemas:
- *      Booking_Details:
- *        type: object
- *        properties:
- *          booking_id:
- *            type: object
- *            description: Booking's Id
- *          custName:
- *            type: string
- *            description: Customer's name
- *            example: Duong
- *          custEmail:
- *            type: string
- *            description: Customer's email
- *            example: trungduong22@gmail.com
- *          custPhone:
- *            type: number
- *            description: Customer's phone number
- *            example: 838323423
- *          custAddress:
- *            type: string
- *            description: Customer's address
- *            example: Ho Chi Minh
- *          licensePlate:
- *            type: string
- *            description: Vehicle's license plate number
- *            example: H5-41445
- *          totalPrice:
- *            type: number
- *            description: Total price of Booking
- *            example: 100000
- *          payment:
- *            type: boolean
- *            description: Checking if has payment
- *            example: false
- */
+bookingRouter.route("/cancelCustomer").post(cancelCustomerBooking);
 
-bookingRouter
-  .route('/bookingDetails/:bookingId')
-  .all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'json/plain');
-    next();
-  })
+bookingRouter.route("/cancelOwner").post(cancelOwnerBooking);
 
-  /**
-   * @swagger
-   * /api/bookings/bookingDetails/{bookingId}:
-   *  post:
-   *    tags:
-   *      - Booking Details
-   *    summary: Retrieve a booking details by bookingId
-   *    description: Retrieve a booking details by bookingId description
-   *    parameters:
-   *      - name: bookingId
-   *        in: path
-   *        required: true
-   *        description: Booking
-   *        type: string
-   *    requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             properties:
-   *               custName:
-   *                  type: string
-   *                  description: Customer's name
-   *                  example: Duong
-   *               custEmail:
-   *                  type: string
-   *                  description: Customer's email
-   *                  example: trungduong22@gmail.com
-   *               custPhone:
-   *                  type: number
-   *                  description: Customer's phone number
-   *                  example: 838323423
-   *               custAddress:
-   *                  type: string
-   *                  description: Customer's address
-   *                  example: Ho Chi Minh
-   *               licensePlate:
-   *                  type: string
-   *                  description: Vehicle's license plate number
-   *                  example: H5-41445
-   *    responses:
-   *      201:
-   *        description: A new booking details is created
-   *        content:
-   *          application/json:
-   *            schema:
-   *              type: object
-   *              properties:
-   *                description:
-   *                  type: string
-   *                  example: Create booking details successfully
-   *                data:
-   *                  type: array
-   *                  items:
-   *                    $ref: '#/components/schemas/Booking_Details'
-   *      400:
-   *        description: All field not be empty! OR This booking has already have booking's Details! OR Booking Details data is not Valid
-   *      404:
-   *        description: Booking not Found!
-   *
-   */
-  .post(createBookingDetails)
-
-  /**
-   * @swagger
-   * /api/bookings/bookingDetails/{bookingId}:
-   *  get:
-   *    tags:
-   *      - Booking Details
-   *    summary: Retrieve a booking details by bookingId
-   *    description: Retrieve a booking details by bookingId
-   *    parameters:
-   *      - name: bookingId
-   *        in: path
-   *        required: true
-   *        description: Booking
-   *        type: string
-   *    responses:
-   *      200:
-   *        description: Retrieve a booking details by bookingId
-   *        content:
-   *          application/json:
-   *            schema:
-   *              type: object
-   *              properties:
-   *                description:
-   *                  type: string
-   *                  example: Retrieve a booking details by bookingId description
-   *                data:
-   *                  type: array
-   *                  items:
-   *                    $ref: '#/components/schemas/Booking_Details'
-   *      404:
-   *        description: Booking not Found! OR Booking don't have Details. Please add one!
-   *
-   */
-  .get(getBookingDetailsByBookingID)
-
-  /**
-   * @swagger
-   * /api/bookings/bookingDetails/{bookingId}:
-   *  delete:
-   *    tags:
-   *      - Booking Details
-   *    summary: Delete a booking details by bookingId
-   *    description: Delete a booking details by bookingId
-   *    parameters:
-   *      - name: bookingId
-   *        in: path
-   *        required: true
-   *        description: Booking
-   *        type: string
-   *    responses:
-   *      200:
-   *        description: Delete a booking details by bookingId
-   *        content:
-   *          application/json:
-   *            schema:
-   *              type: object
-   *              properties:
-   *                description:
-   *                  type: string
-   *                  example: Delete a booking details by bookingId description
-   *                data:
-   *                  type: array
-   *                  items:
-   *                    $ref: '#/components/schemas/Booking_Details'
-   *      404:
-   *        description: Booking not Found! OR Booking don't have Details. Please add one!
-   *      500:
-   *        description: Something went wrong in deleting booking!
-   *
-   */
-  .delete(deleteBookingDetailsByBookingID);
-
-/**
- * @swagger
- * /api/bookings/bookingDetails/{bookingId}/confirm:
- *  get:
- *    tags:
- *      - Booking Details
- *    summary: Get booking details information for customer confirmed
- *    description: Get  in for customer confirmed
- *    parameters:
- *      - name: bookingId
- *        in: path
- *        required: true
- *        description: Booking
- *        type: string
- *    responses:
- *      200:
- *        description: Get  in for customer confirmed
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                description:
- *                  type: string
- *                  example: Get  in for customer confirmed
- *                data:
- *                  type: array
- *                  items:
- *                    $ref: '#/components/schemas/Booking_Details'
- *      403:
- *        description: Only customers can confirm booking!
- *      404:
- *        description: Booking not found! Something went wrong in getBookingToConfirm!
- *
- */
-bookingRouter
-  .route('/bookingDetails/:bookingId/confirm')
-  .get(getBookingDetailsForConfirm);
+bookingRouter.route("/changeBookingStatus").post(changeStatusBooking);
 
 module.exports = bookingRouter;

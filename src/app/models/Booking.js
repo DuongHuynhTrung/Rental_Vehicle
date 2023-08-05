@@ -1,14 +1,15 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const bookingSchema = mongoose.Schema(
   {
     user_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
-    licensePlate: {
-      type: String,
+    vehicle_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Vehicle",
       required: true,
     },
     bookingStart: {
@@ -21,28 +22,39 @@ const bookingSchema = mongoose.Schema(
     },
     bookingStatus: {
       type: String,
-      default: 'Processing',
+      default: "Pending",
     },
     totalPrice: {
       type: Number,
       required: true,
     },
-    cancelNote: {
+    cancel_reason: {
       type: String,
+    },
+    user_canceled: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    voucher_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Voucher",
     },
     hasDriver: {
       type: Boolean,
       default: false,
-      required: true,
     },
     isPaid: {
       type: Boolean,
       default: false,
     },
+    isTransferred: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
-    timestamp: true,
+    timestamps: true,
   }
 );
 
-module.exports = mongoose.model('Booking', bookingSchema);
+module.exports = mongoose.model("Booking", bookingSchema);

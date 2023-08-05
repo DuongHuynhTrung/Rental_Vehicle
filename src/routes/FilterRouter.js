@@ -1,32 +1,32 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require("express");
+const bodyParser = require("body-parser");
 const filterRouter = express.Router();
 filterRouter.use(bodyParser.json());
 const {
-  getVehicleByVehicleManufacturer,
-  getVehicleByPrice,
-  getVehicleByTypes,
-} = require('../app/controllers/FilterController');
+  getVehiclesHaveInsurance,
+  getVehiclesByPrice,
+  getVehiclesNoMortgage,
+  getVehicleByCategory,
+  getVehicleByAutoMaker,
+  getVehicleByModel,
+  getCarsByTransmission,
+  getVehicleByAddress,
+  getVehicleByFuel,
+  getVehicleByDate,
+  getVehicleWithManyTypes,
+} = require("../app/controllers/FilterController");
 
 /**
  * @swagger
- * /api/filters/manufacturer:
+ * /api/filters/vehicles/insurance:
  *  get:
  *    tags:
  *      - Filters
- *    summary: Filter vehicles by manufacturer
- *    description: Retrieve a list of Vehicle with manufacturer
- *    parameters:
- *      - name: manufacturer
- *        in: query
- *        description: The manufacturer to search for
- *        Required: true
- *        schema:
- *          type: string
- *        example: Honda
+ *    summary: Filter cars by insurance
+ *    description: Retrieve a list of cars with insurance
  *    responses:
  *      200:
- *        description: A list of vehicles.
+ *        description: A list of cars.
  *        content:
  *          application/json:
  *            schema:
@@ -43,11 +43,40 @@ const {
  *        description: Don't have any vehicle with that manufacturer
  *
  */
-filterRouter.route('/manufacturer').get(getVehicleByVehicleManufacturer);
+filterRouter.route("/vehicles/insurance").get(getVehiclesHaveInsurance);
 
 /**
  * @swagger
- * /api/filters/price:
+ * /api/filters/vehicles/mortgage:
+ *  get:
+ *    tags:
+ *      - Filters
+ *    summary: Filter cars by mortgage
+ *    description: Retrieve a list of cars with mortgage
+ *    responses:
+ *      200:
+ *        description: A list of cars.
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                description:
+ *                  type: string
+ *                  example: Successfully fetched all data!
+ *                data:
+ *                  type: array
+ *                  items:
+ *                    $ref: '#/components/schemas/Vehicle'
+ *      404:
+ *        description: Don't have any vehicle with that manufacturer
+ *
+ */
+filterRouter.route("/vehicles/mortgage").get(getVehiclesNoMortgage);
+
+/**
+ * @swagger
+ * /api/filters/vehicles/price:
  *  get:
  *    tags:
  *      - Filters
@@ -89,45 +118,22 @@ filterRouter.route('/manufacturer').get(getVehicleByVehicleManufacturer);
  *        description: Error in filter vehicle by price
  *
  */
-filterRouter.route('/price').get(getVehicleByPrice);
+filterRouter.route("/vehicles/price").get(getVehiclesByPrice);
 
-/**
- * @swagger
- * /api/filters/types:
- *  get:
- *    tags:
- *      - Filters
- *    summary: Filter vehicles by multiple types
- *    description: Retrieve a list of Vehicle with types in the list
- *    parameters:
- *      - name: types
- *        in: query
- *        description: Types of vehicle to search for
- *        Required: true
- *        schema:
- *          type: string
- *        example: Xe tay côn,4 chỗ
- *    responses:
- *      200:
- *        description: A list of vehicles.
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                description:
- *                  type: string
- *                  example: Successfully fetched all data!
- *                data:
- *                  type: array
- *                  items:
- *                    $ref: '#/components/schemas/Vehicle'
- *      400:
- *        description: No Vehicle found
- *      500:
- *        description: Error in filtering vehicle by type
- *
- */
-filterRouter.route('/types').get(getVehicleByTypes);
+filterRouter.route("/vehicles/category").get(getVehicleByCategory);
+
+filterRouter.route("/vehicles/autoMaker").get(getVehicleByAutoMaker);
+
+filterRouter.route("/vehicles/model").get(getVehicleByModel);
+
+filterRouter.route("/cars/transmission").get(getCarsByTransmission);
+
+filterRouter.route("/vehicles/address").get(getVehicleByAddress);
+
+filterRouter.route("/vehicles/fuel").get(getVehicleByFuel);
+
+filterRouter.route("/vehicles/date").get(getVehicleByDate);
+
+filterRouter.route("/vehicles/types").get(getVehicleWithManyTypes);
 
 module.exports = filterRouter;

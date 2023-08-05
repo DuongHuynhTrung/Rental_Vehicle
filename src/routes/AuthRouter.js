@@ -1,13 +1,14 @@
-const express = require('express');
+const express = require("express");
 const authRouter = express.Router();
-const loginLimiter = require('../app/middleware/loginLimiter');
-const passport = require('passport');
+const loginLimiter = require("../app/middleware/loginLimiter");
+const passport = require("passport");
 const {
   login,
+  loginGoogle,
   refresh,
   logout,
   loginOauth,
-} = require('../app/controllers/AuthController');
+} = require("../app/controllers/AuthController");
 
 /**
  * @swagger
@@ -34,7 +35,15 @@ const {
  *                  example: 123456
  *    responses:
  *      200:
- *        description: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJOYW1lIjoiRHVvbmciLCJlbWFpbCI6InRydW5nZHVvbmdAZ21haWwuY29tIiwiaWQiOiI2M2UwODNhYjVjMTYyMzcwNjU2YTE0OTQifSwiaWF0IjoxNjc1ODQxNzE0LCJleHAiOjE2NzU4NDI2MTR9.cDeimio_-xU9HmdJ5E0DemwjHnCPKhnE6nIraNOv81g
+ *        content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               accessToken:
+ *                  type: string
+ *                  description: access token
+ *                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJOYW1lIjoiRHVvbmciLCJlbWFpbCI6InRydW5nZHVvbmdAZ21haWwuY29tIiwiaWQiOiI2M2UwODNhYjVjMTYyMzcwNjU2YTE0OTQifSwiaWF0IjoxNjc1ODQxNzE0LCJleHAiOjE2NzU4NDI2MTR9.cDeimio_-xU9HmdJ5E0DemwjHnCPKhnE6nIraNOv81geyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJOYW1lIjoiRHVvbmciLCJlbWFpbCI6InRydW5nZHVvbmdAZ21haWwuY29tIiwiaWQiOiI2M2UwODNhYjVjMTYyMzcwNjU2YTE0OTQifSwiaWF0IjoxNjc1ODQxNzE0LCJleHAiOjE2NzU4NDI2MTR9.cDeimio_-xU9HmdJ5E0DemwjHnCPKhnE6nIraNOv81g
  *      401:
  *        description: Email or Password is not Valid!
  *      429:
@@ -42,7 +51,9 @@ const {
  *
  */
 
-authRouter.route('/login').post(loginLimiter, login);
+authRouter.route("/login").post(loginLimiter, login);
+
+authRouter.route("/loginGoogle").post(loginLimiter, loginGoogle);
 
 /**
  * @swagger
@@ -54,7 +65,15 @@ authRouter.route('/login').post(loginLimiter, login);
  *    description: Refresh Access token by checking valid cookie
  *    responses:
  *      200:
- *        description: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJOYW1lIjoiRHVvbmciLCJlbWFpbCI6InRydW5nZHVvbmdAZ21haWwuY29tIiwiaWQiOiI2M2UwODNhYjVjMTYyMzcwNjU2YTE0OTQifSwiaWF0IjoxNjc1ODQxNzE0LCJleHAiOjE2NzU4NDI2MTR9.cDeimio_-xU9HmdJ5E0DemwjHnCPKhnE6nIraNOv81g
+ *       content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              accessToken:
+ *                 type: string
+ *                 description: access token
+ *                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJOYW1lIjoiRHVvbmciLCJlbWFpbCI6InRydW5nZHVvbmdAZ21haWwuY29tIiwiaWQiOiI2M2UwODNhYjVjMTYyMzcwNjU2YTE0OTQifSwiaWF0IjoxNjc1ODQxNzE0LCJleHAiOjE2NzU4NDI2MTR9.cDeimio_-xU9HmdJ5E0DemwjHnCPKhnE6nIraNOv81geyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7InVzZXJOYW1lIjoiRHVvbmciLCJlbWFpbCI6InRydW5nZHVvbmdAZ21haWwuY29tIiwiaWQiOiI2M2UwODNhYjVjMTYyMzcwNjU2YTE0OTQifSwiaWF0IjoxNjc1ODQxNzE0LCJleHAiOjE2NzU4NDI2MTR9.cDeimio_-xU9HmdJ5E0DemwjHnCPKhnE6nIraNOv81g
  *      401:
  *        description: Email or Password is not Valid!
  *      403:
@@ -62,7 +81,7 @@ authRouter.route('/login').post(loginLimiter, login);
  *
  */
 
-authRouter.route('/refresh').get(refresh);
+authRouter.route("/refresh").get(refresh);
 
 /**
  * @swagger
@@ -80,17 +99,17 @@ authRouter.route('/refresh').get(refresh);
  *
  */
 
-authRouter.route('/logout').post(logout);
+authRouter.route("/logout").post(logout);
 
 /* FACEBOOK ROUTER */
 authRouter.get(
-  '/login/facebook',
-  passport.authenticate('facebook', { scope: ['profile', 'email'] })
+  "/login/facebook",
+  passport.authenticate("facebook", { scope: ["profile", "email"] })
 );
 
 authRouter.get(
-  '/facebook/callback',
-  passport.authenticate('facebook', { failureRedirect: '/login' }),
+  "/facebook/callback",
+  passport.authenticate("facebook", { failureRedirect: "/login" }),
   function (req, res) {
     res.send(req.user);
   }
@@ -115,18 +134,18 @@ authRouter.get(
  */
 
 authRouter.get(
-  '/login/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
+  "/login/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-authRouter.get('/login/authOauth', loginOauth);
+authRouter.get("/login/authOauth", loginOauth);
 
 authRouter.get(
-  '/google/callback',
-  passport.authenticate('google', {
-    failureRedirect: '/login',
+  "/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/login",
     failureMessage: true,
-    successRedirect: 'http://localhost:3000/home',
+    successRedirect: "http://localhost:3000/home",
   })
   // loginOauth
   // function (req, res) {

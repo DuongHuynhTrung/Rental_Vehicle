@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const userSchema = mongoose.Schema(
   {
@@ -8,31 +8,34 @@ const userSchema = mongoose.Schema(
     firstName: {
       type: String,
       maxLength: 255,
-      required: [true, 'Please add your first name.'],
+      required: [true, "Please add your first name."],
     },
     lastName: {
       type: String,
       maxLength: 255,
-      required: [true, 'Please add your last name.'],
+      required: [true, "Please add your last name."],
     },
     gender: {
       type: String,
     },
     dob: {
-      type: String,
+      type: Date,
     },
     address: {
       type: String,
     },
+    address_details: {
+      type: String,
+    },
     phone: {
-      type: Number,
+      type: String,
       maxLength: 10,
     },
     email: {
       type: String,
       maxLength: 255,
-      required: [true, 'Please add your email.'],
-      unique: [true, 'Email address has already taken.'],
+      required: [true, "Please add your email."],
+      unique: [true, "Email address has already taken."],
     },
     password: {
       type: String,
@@ -40,12 +43,17 @@ const userSchema = mongoose.Schema(
     imgURL: {
       type: String,
     },
+    booked: {
+      type: Number,
+      default: 0,
+    },
     profit: {
       type: Number,
+      default: 0,
     },
     role_id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Role',
+      ref: "Role",
       required: [true],
     },
     status: {
@@ -58,10 +66,16 @@ const userSchema = mongoose.Schema(
     otpExpires: {
       type: Date,
     },
+    rate: {
+      type: Number,
+      min: 0,
+      max: 5,
+      default: 0,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model("User", userSchema);

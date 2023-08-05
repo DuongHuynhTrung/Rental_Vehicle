@@ -1,15 +1,15 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const reviewSchema = mongoose.Schema(
   {
     user_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: [true]
-    }
+      type: mongoose.Schema.Types.ObjectId,
+      required: [true],
+    },
   },
   {
-    timestamp: true,
+    timestamps: true,
   }
 );
 
-module.exports = mongoose.model('Review', reviewSchema);
+module.exports = mongoose.model("Review", reviewSchema);
